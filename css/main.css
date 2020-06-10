@@ -81,15 +81,15 @@ header::after {
   transition: ease-in-out 500ms;
 }
 
-nav a:hover::before {
+.links nav a:hover::before {
   width: 100%;
 }
 
-nav .current {
+.links nav .current {
   color: white;
 }
 
-nav .current::before {
+.links nav .current::before {
   width: 75%;
 }
 
