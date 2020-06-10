@@ -1,0 +1,68 @@
+/* Main Content */
+.gallery_container-spotlight {
+    text-align: center;
+    color: #dcc2c2;
+    padding: 5vh;
+    padding-bottom: 0;
+    position: relative;
+}
+
+/* For spotlight 1 Image */
+.gallery_container-spotlight .spotlight1 {
+    float: left;
+    border: solid 3px white;
+    border-radius: 12px;
+    width: 45%;
+    position: relative;
+}
+
+/* For spotlight 2 Image */
+.gallery_container-spotlight .spotlight2 {
+    float: right;
+    border: solid 3px white;
+    border-radius: 12px;
+    width: 45%;
+    position: relative;
+}
+
+.gallery_container-spotlight .other {
+    padding-top: 47vh;
+}
+
+.other .other-img1 {
+    float: left;
+    margin-left: 10vh;
+    border: solid 3px white;
+    border-radius: 12px;
+    width: 40%;
+    height: 450px;
+    position: relative;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.other .other-img2 {
+    margin-top: 10vh;
+    float: left;
+    margin-left: 10vh;
+    border: solid 3px white;
+    border-radius: 12px;
+    width: 40%;
+    position: relative;
+}
+
+.gallery_container-spotlight img:hover {
+    transform: scale(1.1);
+}
+
+.footer-gallery {
+    color: white;
+    text-align: center;
+    background: black;
+    padding: 5px;
+  
+    position: fixed;
+    bottom: 0;
+    width: 99.3%;
+    height: 58px;
+}

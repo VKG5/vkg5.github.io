@@ -1,0 +1,44 @@
+/* For the main content */
+.service-container {
+    padding-top: 5vh;
+    text-align: center;
+    position: relative;
+    color: #dcc2c2;
+    font-size: 25px;
+}
+
+.service-container h1 {
+    padding-right: 5vh;
+}
+
+.service1 {
+    position: relative;
+    margin-left: 8vh;
+    float: left;
+    border: solid 1px #dcc2c2;
+    border-radius: 12px;
+    margin-bottom: 10vh;
+
+    position: relative;
+}
+
+.service1 p {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.service1 button {
+    text-align: center;
+    margin-bottom: 10vh;
+}
+
+/* Footer */
+.footer-services {
+    color: white;
+    text-align: center;
+    background: black;
+  
+    position: absolute;
+    bottom: 0;
+    width: 99.3%;
+  }
