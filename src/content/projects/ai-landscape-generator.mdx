@@ -1,0 +1,71 @@
+---
+title: "AI Procedural Landscape Generator"
+description: "Thesis project combining Stable Diffusion with a custom C++ OpenGL renderer for AI-guided terrain generation."
+publishedAt: 2024-08-20
+status: completed
+category: research
+technologies: [C++, OpenGL, Python, Stable Diffusion, CUDA]
+featured: true
+cover: /images/projects/ai-landscape-cover.jpg
+links:
+  github: https://github.com/VKG5/ai-landscape-generator
+---
+
+## Overview
+
+My thesis project exploring the intersection of AI image generation and real-time procedural graphics. The system uses Stable Diffusion to generate landscape concepts, then reconstructs them as 3D terrain in a custom OpenGL renderer.
+
+## Research Question
+
+Can we use 2D AI-generated images as meaningful input for 3D procedural generation systems?
+
+The answer, it turns out, is "yes, with significant preprocessing."
+
+## System Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ Stable Diffusion│────▶│ Feature Extract │────▶│ Terrain Engine  │
+│ (2D Generation) │     │ (Python/OpenCV) │     │ (C++/OpenGL)    │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### Stage 1: AI Generation
+Using Stable Diffusion with custom landscape-focused fine-tuning to generate concept images. The key was training on images with clear horizon lines and consistent lighting.
+
+### Stage 2: Feature Extraction
+A Python pipeline extracts:
+- Heightmap approximation (from luminance gradients)
+- Biome classification (from color clusters)
+- Vegetation density (from texture analysis)
+
+### Stage 3: Terrain Reconstruction
+The C++ engine reconstructs 3D terrain using:
+- GPU-accelerated heightmap generation
+- Procedural detail overlay (rocks, grass, trees)
+- Atmospheric scattering for consistent lighting
+
+## Results
+
+The system successfully generates coherent 3D landscapes from AI concepts, with some caveats:
+- Works best with landscapes that have clear depth cues
+- Struggles with highly stylized or abstract inputs
+- Generation quality depends heavily on the source image
+
+## Technical Challenges
+
+1. **Depth estimation** — 2D to 3D reconstruction is inherently ambiguous
+2. **Style consistency** — Matching procedural detail to AI aesthetics
+3. **Performance** — Real-time rendering while processing AI features
+
+## Outcome
+
+- Successfully defended thesis
+- Paper submitted to SIGGRAPH Asia (under review)
+- Open-sourced the renderer and feature extraction pipeline
+
+## Future Work
+
+- Real-time Stable Diffusion integration (currently batch-processed)
+- Multi-view synthesis for more accurate depth
+- Vegetation and structure placement using AI suggestions

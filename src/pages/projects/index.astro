@@ -1,0 +1,89 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProjectCard from '@/components/projects/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+import { sortByDate } from '@/lib/utils';
+import { PROJECT_CATEGORIES } from '@/lib/constants';
+
+// Get all projects
+const allProjects = await getCollection('projects');
+const projects = sortByDate(allProjects);
+
+// Get filter from query
+const currentFilter = Astro.url.searchParams.get('filter');
+const filteredProjects = currentFilter
+  ? projects.filter((p) => p.data.category === currentFilter)
+  : projects;
+---
+
+<BaseLayout
+  title="Projects"
+  description="Tools, experiments, and research projects in procedural generation, technical art, and game development."
+>
+  <section class="section">
+    <div class="container">
+      <!-- Header -->
+      <header class="mb-12" data-animate>
+        <h1 class="heading-1 mb-4">Projects</h1>
+        <p class="lead max-w-2xl">
+          A collection of tools, experiments, and research projects. 
+          Each one taught me something new.
+        </p>
+      </header>
+      
+      <!-- Filter -->
+      <div class="mb-10 pb-6 border-b border-border" data-animate>
+        <div class="flex items-center gap-2 flex-wrap">
+          <a
+            href="/projects"
+            class={`px-4 py-2 text-sm font-medium rounded-lg transition-colors
+              ${!currentFilter 
+                ? 'bg-accent text-white' 
+                : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
+              }`}
+          >
+            All
+          </a>
+          {PROJECT_CATEGORIES.map((cat) => (
+            <a
+              href={`/projects?filter=${cat.slug}`}
+              class={`px-4 py-2 text-sm font-medium rounded-lg transition-colors
+                ${currentFilter === cat.slug 
+                  ? 'bg-accent text-white' 
+                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
+                }`}
+            >
+              {cat.label}
+            </a>
+          ))}
+        </div>
+      </div>
+      
+      <!-- Projects Grid -->
+      {filteredProjects.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProjects.map((project, index) => (
+            <div data-animate style={`animation-delay: ${index * 50}ms`}>
+              <ProjectCard
+                title={project.data.title}
+                description={project.data.description}
+                cover={project.data.cover}
+                technologies={project.data.technologies}
+                href={`/projects/${project.slug}`}
+                featured={project.data.featured}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="card text-center py-16">
+          <div class="text-4xl mb-4">🚀</div>
+          <h3 class="heading-4 mb-2">No projects yet</h3>
+          <p class="text-text-tertiary">
+            Projects are coming soon. In the meantime, check out my blog!
+          </p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

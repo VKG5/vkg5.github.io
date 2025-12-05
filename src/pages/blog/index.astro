@@ -1,0 +1,94 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/blog/PostCard.astro';
+import { getCollection } from 'astro:content';
+import { sortByDate, filterDrafts, getReadingTime } from '@/lib/utils';
+import { BLOG_CATEGORIES } from '@/lib/constants';
+
+// Get all posts
+const allPosts = await getCollection('blog');
+const posts = sortByDate(filterDrafts(allPosts));
+
+// Get category from query (for filtering)
+const currentCategory = Astro.url.searchParams.get('category');
+const filteredPosts = currentCategory 
+  ? posts.filter((p) => p.data.category === currentCategory)
+  : posts;
+---
+
+<BaseLayout
+  title="Blog"
+  description="Technical articles about procedural generation, technical art, tool development, and game development."
+>
+  <section class="section">
+    <div class="container">
+      <!-- Header -->
+      <header class="mb-12" data-animate>
+        <h1 class="heading-1 mb-4">Blog</h1>
+        <p class="lead max-w-2xl">
+          Technical deep-dives, tutorials, and thoughts on procedural generation, 
+          technical art, and tool development.
+        </p>
+      </header>
+      
+      <!-- Category Filter -->
+      <div class="mb-10 pb-6 border-b border-border overflow-x-auto no-scrollbar" data-animate>
+        <div class="flex items-center gap-2 min-w-max">
+          <a
+            href="/blog"
+            class={`px-4 py-2 text-sm font-medium rounded-lg transition-colors
+              ${!currentCategory 
+                ? 'bg-accent text-white' 
+                : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
+              }`}
+          >
+            All
+          </a>
+          {BLOG_CATEGORIES.map((cat) => (
+            <a
+              href={`/blog?category=${cat.slug}`}
+              class={`px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
+                ${currentCategory === cat.slug 
+                  ? 'bg-accent text-white' 
+                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
+                }`}
+            >
+              {cat.label}
+            </a>
+          ))}
+        </div>
+      </div>
+      
+      <!-- Posts Grid -->
+      {filteredPosts.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPosts.map((post, index) => (
+            <div data-animate style={`animation-delay: ${index * 50}ms`}>
+              <PostCard
+                title={post.data.title}
+                description={post.data.description}
+                publishedAt={post.data.publishedAt}
+                category={post.data.category}
+                tags={post.data.tags}
+                readingTime={8}
+                href={`/blog/${post.slug}`}
+                featured={post.data.featured}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="card text-center py-16">
+          <div class="text-4xl mb-4">📝</div>
+          <h3 class="heading-4 mb-2">No articles yet</h3>
+          <p class="text-text-tertiary">
+            {currentCategory 
+              ? `No articles in this category yet. Check back soon!`
+              : `Articles are coming soon. Stay tuned!`
+            }
+          </p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

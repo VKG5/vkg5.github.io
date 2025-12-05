@@ -1,0 +1,187 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Button from '@/components/common/Button.astro';
+import PostCard from '@/components/blog/PostCard.astro';
+import ProjectCard from '@/components/projects/ProjectCard.astro';
+import Tag from '@/components/common/Tag.astro';
+import { getCollection } from 'astro:content';
+import { sortByDate, filterDrafts, getReadingTime } from '@/lib/utils';
+
+// Get latest posts
+const allPosts = await getCollection('blog');
+const posts = sortByDate(filterDrafts(allPosts)).slice(0, 3);
+
+// Get featured projects
+const allProjects = await getCollection('projects');
+const featuredProjects = allProjects.filter((p) => p.data.featured).slice(0, 3);
+
+// Expertise areas
+const expertise = [
+  {
+    title: 'Procedural Generation',
+    description: 'Creating systems that generate content algorithmically—terrain, vegetation, architecture, and more.',
+    icon: '◇',
+  },
+  {
+    title: 'Tool Development',
+    description: 'Building workflows and plugins that make artists faster and eliminate repetitive tasks.',
+    icon: '◈',
+  },
+  {
+    title: 'Technical Art',
+    description: 'Bridging art and engineering through shaders, materials, rigging systems, and pipelines.',
+    icon: '◆',
+  },
+];
+---
+
+<BaseLayout>
+  <!-- Hero Section -->
+  <section class="section relative overflow-hidden">
+    <!-- Subtle background gradient -->
+    <div class="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent pointer-events-none" />
+    
+    <div class="container relative">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="heading-1 mb-6" data-animate>
+          Varun Kumar Gupta
+        </h1>
+        
+        <p class="text-xl md:text-2xl text-text-secondary mb-4" data-animate>
+          Technical Artist & Game Developer
+        </p>
+        
+        <p class="lead mb-8 max-w-2xl mx-auto" data-animate>
+          Building tools, pipelines, and procedural systems that power creative workflows.
+        </p>
+        
+        <div class="flex flex-wrap items-center justify-center gap-4 mb-12" data-animate>
+          <Button href="/blog" variant="primary">Read Blog</Button>
+          <Button href="/projects" variant="secondary">View Projects</Button>
+        </div>
+        
+        <div class="flex items-center justify-center gap-4 text-sm text-text-tertiary" data-animate>
+          <span>Previously:</span>
+          <span class="text-text-secondary">Rockstar Games</span>
+          <span>·</span>
+          <span class="text-text-secondary">EA @ Technicolor</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Expertise Section -->
+  <section class="section-sm bg-bg-secondary/50 border-y border-border">
+    <div class="container">
+      <div class="grid md:grid-cols-3 gap-8">
+        {expertise.map((item, index) => (
+          <div class="text-center md:text-left" data-animate style={`animation-delay: ${index * 100}ms`}>
+            <div class="text-2xl text-accent mb-4">{item.icon}</div>
+            <h3 class="text-lg font-semibold text-text-primary mb-2">{item.title}</h3>
+            <p class="text-text-secondary text-sm">{item.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+  
+  <!-- Latest Articles -->
+  <section class="section">
+    <div class="container">
+      <div class="flex items-center justify-between mb-10">
+        <h2 class="heading-3">Latest Articles</h2>
+        <a href="/blog" class="link-underline text-text-secondary hover:text-text-primary text-sm">
+          View All →
+        </a>
+      </div>
+      
+      {posts.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.map((post, index) => (
+            <div data-animate style={`animation-delay: ${index * 100}ms`}>
+              <PostCard
+                title={post.data.title}
+                description={post.data.description}
+                publishedAt={post.data.publishedAt}
+                category={post.data.category}
+                tags={post.data.tags}
+                readingTime={8}
+                href={`/blog/${post.slug}`}
+                featured={post.data.featured}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="card text-center py-12">
+          <p class="text-text-tertiary mb-4">No articles yet. Check back soon!</p>
+          <p class="text-sm text-text-tertiary">
+            In the meantime, explore my <a href="/projects" class="link">projects</a>.
+          </p>
+        </div>
+      )}
+    </div>
+  </section>
+  
+  <!-- Featured Projects -->
+  <section class="section bg-bg-secondary/30 border-y border-border">
+    <div class="container">
+      <div class="flex items-center justify-between mb-10">
+        <h2 class="heading-3">Featured Projects</h2>
+        <a href="/projects" class="link-underline text-text-secondary hover:text-text-primary text-sm">
+          All Projects →
+        </a>
+      </div>
+      
+      {featuredProjects.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredProjects.map((project, index) => (
+            <div data-animate style={`animation-delay: ${index * 100}ms`}>
+              <ProjectCard
+                title={project.data.title}
+                description={project.data.description}
+                cover={project.data.cover}
+                technologies={project.data.technologies}
+                href={`/projects/${project.slug}`}
+                featured={project.data.featured}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="card text-center py-12">
+          <p class="text-text-tertiary">Projects coming soon!</p>
+        </div>
+      )}
+    </div>
+  </section>
+  
+  <!-- About Preview -->
+  <section class="section">
+    <div class="container">
+      <div class="max-w-3xl mx-auto">
+        <div class="flex flex-col md:flex-row items-start gap-8" data-animate>
+          <!-- Avatar placeholder -->
+          <div class="w-24 h-24 rounded-xl bg-bg-tertiary border border-border flex-shrink-0 flex items-center justify-center">
+            <span class="text-3xl">👤</span>
+          </div>
+          
+          <div>
+            <h2 class="heading-4 mb-4">Hi, I'm Varun.</h2>
+            <p class="text-text-secondary mb-4">
+              I'm a Technical Artist and Game Developer specializing in procedural generation, 
+              tool development, and pipeline optimization. I build the invisible infrastructure 
+              that empowers creative teams.
+            </p>
+            <p class="text-text-secondary mb-6">
+              I've worked with <strong class="text-text-primary">Rockstar Games</strong> and 
+              <strong class="text-text-primary">EA</strong> through Technicolor, built tools used 
+              by hundreds of artists, and I write about the intersection of art and technology.
+            </p>
+            <Button href="/about" variant="ghost">More About Me →</Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
