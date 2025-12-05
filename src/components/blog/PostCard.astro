@@ -1,0 +1,55 @@
+---
+import { formatDate } from '@/lib/utils';
+import Tag from '@/components/common/Tag.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  publishedAt: Date;
+  category: string;
+  tags?: string[];
+  readingTime: number;
+  href: string;
+  featured?: boolean;
+}
+
+const { title, description, publishedAt, category, tags = [], readingTime, href, featured } = Astro.props;
+---
+
+<article class="group">
+  <a href={href} class="block card card-hover">
+    {featured && (
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-xs font-medium text-accent bg-accent/10 px-2 py-0.5 rounded">
+          Featured
+        </span>
+      </div>
+    )}
+    
+    <div class="flex items-center gap-3 text-sm text-text-tertiary mb-3">
+      <span class="capitalize">{category.replace('-', ' ')}</span>
+      <span>·</span>
+      <time datetime={publishedAt.toISOString()}>
+        {formatDate(publishedAt, { month: 'short', day: 'numeric', year: 'numeric' })}
+      </time>
+      <span>·</span>
+      <span>{readingTime} min read</span>
+    </div>
+    
+    <h3 class="text-xl font-semibold text-text-primary mb-2 group-hover:text-accent transition-colors">
+      {title}
+    </h3>
+    
+    <p class="text-text-secondary line-clamp-2 mb-4">
+      {description}
+    </p>
+    
+    {tags.length > 0 && (
+      <div class="flex flex-wrap gap-2">
+        {tags.slice(0, 3).map((tag) => (
+          <span class="text-xs text-text-tertiary">#{tag}</span>
+        ))}
+      </div>
+    )}
+  </a>
+</article>

@@ -1,0 +1,90 @@
+---
+title: "Virtual Puppeteering System"
+description: "Real-time character animation system using OSC input devices and Unreal Engine's Control Rig for live puppeteering."
+publishedAt: 2024-03-10
+status: completed
+category: tool
+technologies: [Unreal Engine, C++, Control Rig, OSC, Blueprint]
+featured: true
+cover: /images/projects/virtual-puppeteering-cover.jpg
+links:
+  github: https://github.com/VKG5/virtual-puppeteering
+  demo: https://youtu.be/demo-link
+---
+
+## Overview
+
+A real-time character animation system that allows performers to control digital characters using physical input devices. Built for live streaming and virtual production workflows.
+
+## The Problem
+
+Traditional animation workflows are slow. Even simple character movements require:
+- Keyframing every pose
+- Tweaking timing curves
+- Multiple iteration passes
+
+For live content, this doesn't work. We needed animation that happens in real-time.
+
+## Solution
+
+The Virtual Puppeteering System connects physical controllers (MIDI devices, custom hardware, mobile apps) to Unreal Engine characters via OSC (Open Sound Control).
+
+```
+┌─────────────┐    OSC    ┌─────────────┐    Control Rig    ┌─────────────┐
+│ Controller  │──────────▶│ Input Layer │─────────────────▶│ Character   │
+│ (Physical)  │           │ (Blueprint) │                   │ (Skeletal)  │
+└─────────────┘           └─────────────┘                   └─────────────┘
+```
+
+## Key Features
+
+### Modular Input Mapping
+Any OSC-capable device can be mapped to any control:
+- Sliders → Facial expressions
+- Buttons → Pose triggers
+- Accelerometers → Head tracking
+- Custom hardware → Custom controls
+
+### Control Rig Integration
+Built on UE5's Control Rig system for:
+- Physically-based secondary motion
+- Automatic IK solving
+- Blend between poses
+
+### Live Preview
+Real-time viewport preview with:
+- Sub-frame latency (~16ms)
+- Visual feedback for input values
+- Recording to sequencer
+
+## Technical Implementation
+
+The core of the system is a custom OSC receiver in C++:
+
+```cpp
+void UOSCReceiver::OnMessageReceived(const FOSCMessage& Message)
+{
+    FString Address = Message.GetAddress();
+    float Value = Message.GetFloat(0);
+    
+    // Dispatch to registered handlers
+    if (InputHandlers.Contains(Address))
+    {
+        InputHandlers[Address].Execute(Value);
+    }
+}
+```
+
+This feeds into Blueprint-exposed functions that animators can wire to any control.
+
+## Results
+
+- Used in 3 live-streamed productions
+- Average latency: 18ms (acceptable for live performance)
+- Shipped as open-source tool
+
+## Lessons Learned
+
+1. **Latency is everything** — Even 50ms feels laggy for live performance
+2. **Animators aren't programmers** — The Blueprint interface was essential for adoption
+3. **Physical controls matter** — Touch screens lack the tactile feedback performers need

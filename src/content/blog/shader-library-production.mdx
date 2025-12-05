@@ -1,0 +1,90 @@
+---
+title: "Building a Shader Library for Production"
+description: "How I organize, version, and deploy shaders at scale—lessons learned from shipping tools to 500+ artists."
+publishedAt: 2025-11-18
+category: shaders
+tags: [shaders, pipelines, best-practices]
+featured: false
+draft: false
+---
+
+When you're writing shaders for yourself, organization is optional. When you're writing shaders for a team of 50 artists, it's everything.
+
+Over the past two years, I've built and maintained shader libraries used across multiple projects. Here's what I've learned about keeping things manageable at scale.
+
+## The Folder Structure That Actually Works
+
+After trying various approaches, I settled on this structure:
+
+```
+/Shaders
+├── /Core
+│   ├── Common.hlsl          # Shared utilities
+│   ├── Lighting.hlsl        # Lighting functions
+│   └── Math.hlsl            # Math helpers
+├── /Materials
+│   ├── /Surface
+│   │   ├── Standard.shader
+│   │   ├── Foliage.shader
+│   │   └── Skin.shader
+│   └── /Effects
+│       ├── Dissolve.shader
+│       └── Hologram.shader
+├── /Functions
+│   ├── Noise.hlsl
+│   ├── SDF.hlsl
+│   └── Triplanar.hlsl
+└── /Debug
+    ├── Wireframe.shader
+    └── Normals.shader
+```
+
+The key principles:
+- **Core** never depends on anything else
+- **Functions** can depend on Core
+- **Materials** can depend on both
+- **Debug** is separate and can depend on anything
+
+## Versioning Shaders
+
+Every shader include has a version comment at the top:
+
+```hlsl
+// Noise.hlsl v2.3.1
+// Breaking changes in v2.0: Renamed SimplexNoise to Simplex3D
+```
+
+When I make breaking changes, I keep the old version available with a deprecation warning for one release cycle.
+
+## The Include Guard Pattern
+
+Nothing breaks a shader library faster than circular includes. I use this pattern everywhere:
+
+```hlsl
+#ifndef NOISE_INCLUDED
+#define NOISE_INCLUDED
+
+// ... shader code ...
+
+#endif // NOISE_INCLUDED
+```
+
+Simple, but I've seen production codebases without it. Don't be that codebase.
+
+## Documentation That Artists Actually Read
+
+Artists don't read documentation. They read:
+- 30-second video demos
+- Inline parameter tooltips
+- Example files they can copy
+
+So that's what I provide. Every shader ships with a demo scene and annotated examples.
+
+## Takeaways
+
+1. Structure your library by dependency, not by feature
+2. Version everything, even internal includes
+3. Use include guards religiously
+4. Documentation is video-first, text-second
+
+The goal is always the same: artists shouldn't think about the shader library. They should think about their art.

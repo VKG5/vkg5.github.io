@@ -1,0 +1,188 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Button from '@/components/common/Button.astro';
+import Tag from '@/components/common/Tag.astro';
+import { SOCIAL_LINKS, TECHNOLOGIES } from '@/lib/constants';
+
+const experience = [
+  {
+    company: 'Technicolor Games',
+    role: 'Technical Artist',
+    period: '2022 - 2024',
+    clients: ['Rockstar Games', 'EA'],
+    description: 'Worked on AAA titles, developing tools and pipelines for art teams.',
+  },
+  {
+    company: 'Indie Studios',
+    role: 'Technical Artist / Developer',
+    period: '2020 - 2022',
+    clients: ['UK & Indonesia Studios'],
+    description: 'Built custom tools and procedural systems for indie game projects.',
+  },
+];
+
+const highlights = [
+  {
+    metric: '4+',
+    label: 'Years with 3D Software',
+    sublabel: 'Blender, Houdini, Unreal',
+  },
+  {
+    metric: '500+',
+    label: 'Artists Using My Tools',
+    sublabel: 'Lumi Tools users',
+  },
+  {
+    metric: '10+',
+    label: 'Shipped Projects',
+    sublabel: 'Tools, plugins, systems',
+  },
+];
+---
+
+<BaseLayout
+  title="About"
+  description="Technical Artist and Game Developer specializing in procedural generation, tool development, and pipeline optimization."
+>
+  <section class="section">
+    <div class="container">
+      <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <header class="mb-12" data-animate>
+          <h1 class="heading-1 mb-6">About</h1>
+          <p class="lead">
+            I'm Varun Kumar Gupta—a Technical Artist and Game Developer who builds 
+            the systems that make creative work scale.
+          </p>
+        </header>
+        
+        <!-- Main content -->
+        <div class="prose-custom" data-animate>
+          <p>
+            I operate at the intersection of art and engineering. Where most see separate 
+            disciplines, I see opportunities for elegant automation. My work focuses on 
+            <strong>procedural content generation</strong>, <strong>tool development</strong>, 
+            and <strong>pipeline optimization</strong>—creating the invisible infrastructure 
+            that empowers artists to do their best work.
+          </p>
+          
+          <h2>The Path Here</h2>
+          
+          <p>
+            The path here wasn't linear. I started as an artist who got frustrated with 
+            repetitive tasks. That frustration became curiosity about automation. That 
+            curiosity became a career building tools that multiply creative output.
+          </p>
+          
+          <p>
+            Along the way, I've had the privilege of working with <strong>Rockstar Games</strong> 
+            and <strong>EA</strong> through my time at Technicolor Games, collaborating with 
+            indie studios across the UK and Indonesia, and building tools now used by hundreds 
+            of artists worldwide.
+          </p>
+          
+          <h2>What I Do</h2>
+          
+          <ul>
+            <li>
+              <strong>Procedural Generation</strong> — Creating systems that generate content: 
+              terrain, vegetation, architecture, anything that can be described by rules.
+            </li>
+            <li>
+              <strong>Tool Development</strong> — Building artist-facing tools that eliminate 
+              friction: Blender add-ons, Unreal plugins, pipeline scripts.
+            </li>
+            <li>
+              <strong>Technical Art</strong> — Bridging art and engineering: shaders, materials, 
+              rigging systems, and rendering pipelines.
+            </li>
+          </ul>
+          
+          <h2>Technical Foundation</h2>
+          
+          <p>
+            My toolkit includes C++, Python, Unreal Engine, Blender, Houdini, and various 
+            graphics APIs (OpenGL, HLSL). I'm particularly interested in the GPU side of 
+            things—compute shaders, custom renderers, and real-time graphics.
+          </p>
+          
+          <h2>Why I Write</h2>
+          
+          <p>
+            The game dev community taught me everything I know. This site is how I pay it 
+            forward. I write about what I learn, what I build, and the occasional thing 
+            that breaks spectacularly.
+          </p>
+          
+          <p>
+            If you're building something interesting—or just want to talk about procedural 
+            generation over email—I'd love to hear from you.
+          </p>
+        </div>
+        
+        <!-- Skills -->
+        <div class="mt-12 pt-8 border-t border-border" data-animate>
+          <h3 class="heading-4 mb-6">Technologies</h3>
+          <div class="flex flex-wrap gap-2">
+            {TECHNOLOGIES.map((tech) => (
+              <Tag>{tech}</Tag>
+            ))}
+          </div>
+        </div>
+        
+        <!-- Experience -->
+        <div class="mt-12 pt-8 border-t border-border" data-animate>
+          <h3 class="heading-4 mb-6">Experience</h3>
+          <div class="space-y-8">
+            {experience.map((job) => (
+              <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                <div class="sm:w-32 flex-shrink-0">
+                  <span class="text-sm text-text-tertiary">{job.period}</span>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-text-primary">{job.role}</h4>
+                  <p class="text-text-secondary mb-1">{job.company}</p>
+                  {job.clients && (
+                    <p class="text-sm text-text-tertiary mb-2">
+                      Clients: {job.clients.join(', ')}
+                    </p>
+                  )}
+                  <p class="text-sm text-text-secondary">{job.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <!-- Highlights -->
+        <div class="mt-12 pt-8 border-t border-border" data-animate>
+          <div class="grid grid-cols-3 gap-8">
+            {highlights.map((item) => (
+              <div class="text-center">
+                <div class="text-3xl md:text-4xl font-bold text-text-primary mb-1">
+                  {item.metric}
+                </div>
+                <div class="text-sm text-text-secondary">{item.label}</div>
+                <div class="text-xs text-text-tertiary">{item.sublabel}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <!-- CTA -->
+        <div class="mt-12 pt-8 border-t border-border text-center" data-animate>
+          <h3 class="heading-4 mb-4">Let's Connect</h3>
+          <p class="text-text-secondary mb-6">
+            Have a project in mind or just want to chat about tech art?
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <Button href="/contact" variant="primary">Get in Touch</Button>
+            <Button href={SOCIAL_LINKS.github} variant="ghost">
+              GitHub →
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

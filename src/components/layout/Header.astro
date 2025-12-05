@@ -1,0 +1,105 @@
+---
+import { NAV_LINKS, SITE } from '@/lib/constants';
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
+  <div class="container">
+    <nav class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-sm">
+          V
+        </div>
+        <span class="font-semibold text-text-primary group-hover:text-accent transition-colors hidden sm:block">
+          {SITE.name}
+        </span>
+      </a>
+      
+      <!-- Desktop Navigation -->
+      <ul class="hidden md:flex items-center gap-1">
+        {NAV_LINKS.map((link) => {
+          const isActive = currentPath === link.href || 
+            (link.href !== '/' && currentPath.startsWith(link.href));
+          return (
+            <li>
+              <a
+                href={link.href}
+                class={`relative px-4 py-2 text-sm font-medium transition-colors rounded-lg
+                  ${isActive 
+                    ? 'text-text-primary' 
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
+                  }`}
+              >
+                {link.label}
+                {isActive && (
+                  <span class="absolute bottom-0 left-4 right-4 h-0.5 bg-accent rounded-full" />
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+      
+      <!-- Mobile Menu Button -->
+      <button
+        id="mobile-menu-button"
+        class="md:hidden p-2 text-text-secondary hover:text-text-primary transition-colors"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+      >
+        <svg class="w-6 h-6 menu-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg class="w-6 h-6 menu-close hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </nav>
+  </div>
+  
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="md:hidden hidden border-t border-border/50">
+    <div class="container py-4">
+      <ul class="flex flex-col gap-2">
+        {NAV_LINKS.map((link) => {
+          const isActive = currentPath === link.href || 
+            (link.href !== '/' && currentPath.startsWith(link.href));
+          return (
+            <li>
+              <a
+                href={link.href}
+                class={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                  ${isActive 
+                    ? 'bg-accent/10 text-accent' 
+                    : 'text-text-secondary hover:bg-bg-secondary hover:text-text-primary'
+                  }`}
+              >
+                {link.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </div>
+</header>
+
+<!-- Spacer for fixed header -->
+<div class="h-16" />
+
+<script>
+  const menuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const menuOpen = menuButton?.querySelector('.menu-open');
+  const menuClose = menuButton?.querySelector('.menu-close');
+
+  menuButton?.addEventListener('click', () => {
+    const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+    menuButton.setAttribute('aria-expanded', String(!isExpanded));
+    mobileMenu?.classList.toggle('hidden');
+    menuOpen?.classList.toggle('hidden');
+    menuClose?.classList.toggle('hidden');
+  });
+</script>
