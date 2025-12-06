@@ -102,9 +102,9 @@ const filteredProjects = currentFilter
         projectItems.forEach(item => {
           const category = item.getAttribute('data-category');
           if (filter === 'all' || category === filter) {
-            item.style.display = 'block';
+            (item as HTMLElement).style.display = 'block';
           } else {
-            item.style.display = 'none';
+            (item as HTMLElement).style.display = 'none';
           }
         });
       });
