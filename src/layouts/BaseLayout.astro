@@ -173,5 +173,41 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
         observer.observe(el);
       });
     </script>
+    
+    <!-- Click Spark Effect -->
+    <script>
+      document.addEventListener('click', (e) => {
+        const sparkContainer = document.createElement('div');
+        sparkContainer.className = 'click-spark';
+        sparkContainer.style.left = e.clientX + 'px';
+        sparkContainer.style.top = e.clientY + 'px';
+        
+        const particleCount = 8;
+        const angleStep = (Math.PI * 2) / particleCount;
+        
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'spark-particle';
+          
+          const angle = angleStep * i;
+          const distance = 30 + Math.random() * 20;
+          const tx = Math.cos(angle) * distance;
+          const ty = Math.sin(angle) * distance;
+          
+          particle.style.setProperty('--tx', tx + 'px');
+          particle.style.setProperty('--ty', ty + 'px');
+          particle.style.left = '-2px';
+          particle.style.top = '-2px';
+          
+          sparkContainer.appendChild(particle);
+        }
+        
+        document.body.appendChild(sparkContainer);
+        
+        setTimeout(() => {
+          sparkContainer.remove();
+        }, 600);
+      });
+    </script>
   </body>
 </html>
