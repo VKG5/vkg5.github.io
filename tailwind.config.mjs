@@ -32,6 +32,7 @@ export default {
       },
       fontSize: {
         '2xs': '0.625rem',
+        base: '1.3125rem', // 21px
       },
       spacing: {
         '18': '4.5rem',

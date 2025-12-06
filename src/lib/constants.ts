@@ -21,9 +21,9 @@ export const NAV_LINKS = [
 // Social links
 export const SOCIAL_LINKS = {
   github: 'https://github.com/VKG5',
-  linkedin: 'https://linkedin.com/in/varungupta',
-  twitter: 'https://twitter.com/varungupta',
-  email: 'mailto:hello@varungupta.dev',
+  linkedin: 'https://linkedin.com/in/varunkumargupta5',
+  twitter: 'https://x.com/Bawa_Gupta_',
+  email: 'mailto:varunkumargupta914@gmail.com',
 } as const;
 
 // Blog categories
