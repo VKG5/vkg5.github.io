@@ -5,24 +5,25 @@ export default {
   theme: {
     extend: {
       colors: {
+        // VS Code Dark Modern Theme
         bg: {
-          primary: '#0D0D0F',
-          secondary: '#141417',
-          tertiary: '#1A1A1F',
+          primary: '#1F1F1F',
+          secondary: '#252526',
+          tertiary: '#2D2D30',
         },
         text: {
-          primary: '#FAFAFA',
-          secondary: '#A1A1AA',
-          tertiary: '#71717A',
+          primary: '#CCCCCC',
+          secondary: '#9D9D9D',
+          tertiary: '#6E6E6E',
         },
         accent: {
-          DEFAULT: '#3B82F6',
-          hover: '#60A5FA',
-          subtle: '#1E3A5F',
+          DEFAULT: '#4FC3F7',
+          hover: '#29B6F6',
+          subtle: '#094771',
         },
         border: {
-          DEFAULT: '#27272A',
-          hover: '#3F3F46',
+          DEFAULT: '#3E3E42',
+          hover: '#555555',
         },
       },
       fontFamily: {
@@ -44,33 +45,57 @@ export default {
       typography: ({ theme }) => ({
         DEFAULT: {
           css: {
-            '--tw-prose-body': theme('colors.text.secondary'),
-            '--tw-prose-headings': theme('colors.text.primary'),
-            '--tw-prose-lead': theme('colors.text.secondary'),
-            '--tw-prose-links': theme('colors.accent.DEFAULT'),
-            '--tw-prose-bold': theme('colors.text.primary'),
-            '--tw-prose-counters': theme('colors.text.tertiary'),
-            '--tw-prose-bullets': theme('colors.text.tertiary'),
-            '--tw-prose-hr': theme('colors.border.DEFAULT'),
-            '--tw-prose-quotes': theme('colors.text.secondary'),
-            '--tw-prose-quote-borders': theme('colors.accent.DEFAULT'),
-            '--tw-prose-captions': theme('colors.text.tertiary'),
-            '--tw-prose-code': theme('colors.text.primary'),
-            '--tw-prose-pre-code': theme('colors.text.primary'),
-            '--tw-prose-pre-bg': theme('colors.bg.tertiary'),
-            '--tw-prose-th-borders': theme('colors.border.DEFAULT'),
-            '--tw-prose-td-borders': theme('colors.border.DEFAULT'),
+            '--tw-prose-body': 'var(--color-text-secondary)',
+            '--tw-prose-headings': 'var(--color-text-primary)',
+            '--tw-prose-lead': 'var(--color-text-secondary)',
+            '--tw-prose-links': 'var(--color-accent)',
+            '--tw-prose-bold': 'var(--color-text-primary)',
+            '--tw-prose-counters': 'var(--color-text-tertiary)',
+            '--tw-prose-bullets': 'var(--color-text-tertiary)',
+            '--tw-prose-hr': 'var(--color-border)',
+            '--tw-prose-quotes': 'var(--color-text-secondary)',
+            '--tw-prose-quote-borders': 'var(--color-accent)',
+            '--tw-prose-captions': 'var(--color-text-tertiary)',
+            '--tw-prose-code': 'var(--color-text-primary)',
+            '--tw-prose-pre-code': 'var(--color-text-primary)',
+            '--tw-prose-pre-bg': 'var(--color-bg-tertiary)',
+            '--tw-prose-th-borders': 'var(--color-border)',
+            '--tw-prose-td-borders': 'var(--color-border)',
+            color: 'var(--color-text-secondary)',
             maxWidth: 'none',
             a: {
+              color: 'var(--color-accent)',
               textDecoration: 'none',
               borderBottom: '1px solid transparent',
               transition: 'border-color 0.2s ease',
               '&:hover': {
-                borderBottomColor: theme('colors.accent.DEFAULT'),
+                borderBottomColor: 'var(--color-accent)',
               },
             },
+            strong: {
+              color: 'var(--color-text-primary)',
+            },
+            h1: {
+              color: 'var(--color-text-primary)',
+            },
+            h2: {
+              color: 'var(--color-text-primary)',
+            },
+            h3: {
+              color: 'var(--color-text-primary)',
+            },
+            h4: {
+              color: 'var(--color-text-primary)',
+            },
+            p: {
+              color: 'var(--color-text-secondary)',
+            },
+            li: {
+              color: 'var(--color-text-secondary)',
+            },
             code: {
-              backgroundColor: theme('colors.bg.tertiary'),
+              color: 'var(--color-text-primary)',
+              backgroundColor: 'var(--color-bg-tertiary)',
               padding: '0.25rem 0.375rem',
               borderRadius: '0.25rem',
               fontWeight: '400',
@@ -82,8 +107,13 @@ export default {
               content: '""',
             },
             pre: {
-              backgroundColor: theme('colors.bg.tertiary'),
-              border: `1px solid ${theme('colors.border.DEFAULT')}`,
+              backgroundColor: 'var(--color-bg-tertiary)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            },
+            blockquote: {
+              color: 'var(--color-text-secondary)',
+              borderLeftColor: 'var(--color-accent)',
             },
           },
         },
