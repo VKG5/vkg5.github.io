@@ -389,4 +389,150 @@
   .no-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
+
+  /* Aurora Background Effect */
+  @keyframes aurora-1 {
+    0%, 100% {
+      transform: translate(0%, 0%) rotate(0deg) scale(1);
+      opacity: 0.7;
+    }
+    33% {
+      transform: translate(30%, -30%) rotate(120deg) scale(1.2);
+      opacity: 0.9;
+    }
+    66% {
+      transform: translate(-20%, 20%) rotate(240deg) scale(0.9);
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes aurora-2 {
+    0%, 100% {
+      transform: translate(0%, 0%) rotate(0deg) scale(1);
+      opacity: 0.6;
+    }
+    33% {
+      transform: translate(-30%, 30%) rotate(-120deg) scale(1.1);
+      opacity: 0.8;
+    }
+    66% {
+      transform: translate(20%, -20%) rotate(-240deg) scale(0.95);
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes aurora-3 {
+    0%, 100% {
+      transform: translate(0%, 0%) rotate(0deg) scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate(15%, 15%) rotate(180deg) scale(1.15);
+      opacity: 0.7;
+    }
+  }
+
+  .aurora-background {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    mix-blend-mode: normal;
+  }
+
+  :root:not(.dark) .aurora-blob-1 {
+    width: 500px;
+    height: 500px;
+    top: -250px;
+    left: 20%;
+    background: radial-gradient(circle, rgba(43, 122, 158, 0.35) 0%, transparent 70%);
+    animation: aurora-1 20s ease-in-out infinite;
+  }
+
+  :root:not(.dark) .aurora-blob-2 {
+    width: 600px;
+    height: 600px;
+    top: -200px;
+    right: 10%;
+    background: radial-gradient(circle, rgba(100, 150, 200, 0.32) 0%, transparent 70%);
+    animation: aurora-2 25s ease-in-out infinite;
+  }
+
+  :root:not(.dark) .aurora-blob-3 {
+    width: 450px;
+    height: 450px;
+    top: -150px;
+    left: 50%;
+    background: radial-gradient(circle, rgba(70, 130, 180, 0.30) 0%, transparent 70%);
+    animation: aurora-3 30s ease-in-out infinite;
+  }
+
+  :root.dark .aurora-blob-1 {
+    width: 500px;
+    height: 500px;
+    top: -250px;
+    left: 20%;
+    background: radial-gradient(circle, rgba(79, 195, 247, 0.25) 0%, transparent 70%);
+    animation: aurora-1 20s ease-in-out infinite;
+  }
+
+  :root.dark .aurora-blob-2 {
+    width: 600px;
+    height: 600px;
+    top: -200px;
+    right: 10%;
+    background: radial-gradient(circle, rgba(41, 182, 246, 0.22) 0%, transparent 70%);
+    animation: aurora-2 25s ease-in-out infinite;
+  }
+
+  :root.dark .aurora-blob-3 {
+    width: 450px;
+    height: 450px;
+    top: -150px;
+    left: 50%;
+    background: radial-gradient(circle, rgba(100, 200, 255, 0.20) 0%, transparent 70%);
+    animation: aurora-3 30s ease-in-out infinite;
+  }
+
+  /* Click Spark Effect */
+  @keyframes spark-fly {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--tx), var(--ty)) scale(0);
+      opacity: 0;
+    }
+  }
+
+  .click-spark {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .spark-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    animation: spark-fly 0.6s ease-out forwards;
+  }
+
+  :root:not(.dark) .spark-particle {
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 100%);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+  }
+
+  :root.dark .spark-particle {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+  }
 }
