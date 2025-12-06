@@ -6,10 +6,10 @@ const currentPath = Astro.url.pathname;
 
 <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
   <div class="container">
-    <nav class="flex items-center justify-between h-16">
+    <nav class="flex items-center justify-between h-20">
       <!-- Logo -->
       <a href="/" class="flex items-center gap-3 group">
-        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-sm">
+        <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-base">
           V
         </div>
         <span class="font-semibold text-text-primary group-hover:text-accent transition-colors hidden sm:block">
@@ -101,7 +101,7 @@ const currentPath = Astro.url.pathname;
 </header>
 
 <!-- Spacer for fixed header -->
-<div class="h-16" />
+<div class="h-20" />
 
 <script>
   const menuButton = document.getElementById('mobile-menu-button');

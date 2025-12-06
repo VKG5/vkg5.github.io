@@ -6,22 +6,22 @@
   /* Light mode color overrides (monochrome inverted) */
   :root:not(.dark) {
     --color-bg-primary: #FFFFFF;
-    --color-bg-secondary: #F5F5F5;
-    --color-bg-tertiary: #E8E8E8;
-    --color-text-primary: #1A1A1A;
-    --color-text-secondary: #4A4A4A;
-    --color-text-tertiary: #6E6E6E;
+    --color-bg-secondary: #F8F9FA;
+    --color-bg-tertiary: #F5F5F5;
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+    --color-text-tertiary: #000000;
     --color-accent: #2B7A9E;
     --color-accent-hover: #236585;
     --color-accent-subtle: #E3F2F9;
-    --color-border: #D4D4D4;
-    --color-border-hover: #B8B8B8;
+    --color-border: #E5E5E5;
+    --color-border-hover: #D4D4D4;
   }
 
   :root.dark {
     --color-bg-primary: #1F1F1F;
-    --color-bg-secondary: #252526;
-    --color-bg-tertiary: #2D2D30;
+    --color-bg-secondary: #2A2A2E;
+    --color-bg-tertiary: #333337;
     --color-text-primary: #CCCCCC;
     --color-text-secondary: #9D9D9D;
     --color-text-tertiary: #6E6E6E;
@@ -99,12 +99,69 @@
   a:hover {
     color: var(--color-accent-hover);
   }
+  
+  /* Force Tailwind utility classes to use CSS variables */
+  .text-text-primary {
+    color: var(--color-text-primary) !important;
+  }
+  
+  .text-text-secondary {
+    color: var(--color-text-secondary) !important;
+  }
+  
+  .text-text-tertiary {
+    color: var(--color-text-tertiary) !important;
+  }
+  
+  .hover\:text-text-primary:hover {
+    color: var(--color-text-primary) !important;
+  }
+  
+  .hover\:text-text-secondary:hover {
+    color: var(--color-text-secondary) !important;
+  }
+  
+  .bg-bg-primary {
+    background-color: var(--color-bg-primary) !important;
+  }
+  
+  .bg-bg-secondary {
+    background-color: var(--color-bg-secondary) !important;
+  }
+  
+  .bg-bg-tertiary {
+    background-color: var(--color-bg-tertiary) !important;
+  }
+  
+  .hover\:bg-bg-secondary:hover {
+    background-color: var(--color-bg-secondary) !important;
+  }
+  
+  .border-border {
+    border-color: var(--color-border) !important;
+  }
+  
+  .hover\:border-border-hover:hover {
+    border-color: var(--color-border-hover) !important;
+  }
+  
+  .text-accent {
+    color: var(--color-accent) !important;
+  }
+  
+  .bg-accent {
+    background-color: var(--color-accent) !important;
+  }
+  
+  .hover\:text-accent:hover {
+    color: var(--color-accent) !important;
+  }
 }
 
 @layer components {
   /* Container */
   .container {
-    @apply mx-auto px-8 md:px-12 max-w-6xl;
+    @apply mx-auto px-8 md:px-12 max-w-7xl;
   }
 
   .container-narrow {
