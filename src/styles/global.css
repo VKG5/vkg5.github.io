@@ -44,15 +44,15 @@
 @layer components {
   /* Container */
   .container {
-    @apply mx-auto px-6 max-w-6xl;
+    @apply mx-auto px-8 md:px-12 max-w-6xl;
   }
 
   .container-narrow {
-    @apply mx-auto px-6 max-w-3xl;
+    @apply mx-auto px-8 md:px-12 max-w-3xl;
   }
 
   .container-wide {
-    @apply mx-auto px-6 max-w-8xl;
+    @apply mx-auto px-8 md:px-12 max-w-8xl;
   }
 
   /* Section spacing */
