@@ -81,22 +81,22 @@ const readingTime = getReadingTime(content);
     )}
     
     <!-- Content with TOC -->
-    <div class="container">
-      <div class="lg:grid lg:grid-cols-[1fr_250px] lg:gap-12">
-        <!-- Main content -->
+    <div class="container relative">
+      <!-- Main content (centered) -->
+      <div class="max-w-3xl mx-auto">
         <div class="prose-custom">
           <slot />
         </div>
-        
-        <!-- Sidebar TOC (desktop) -->
-        {headings.length > 0 && (
-          <aside class="hidden lg:block">
-            <div class="sticky top-24">
-              <TableOfContents headings={headings} />
-            </div>
-          </aside>
-        )}
       </div>
+      
+      <!-- Sidebar TOC (desktop, absolute positioned on right) -->
+      {headings.length > 0 && (
+        <aside class="hidden xl:block fixed right-8 top-32 w-64">
+          <div class="sticky top-32">
+            <TableOfContents headings={headings} />
+          </div>
+        </aside>
+      )}
     </div>
     
     <!-- Post footer -->
