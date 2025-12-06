@@ -57,7 +57,7 @@ const readingTime = getReadingTime(content);
       {tags.length > 0 && (
         <div class="flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <Tag href={`/blog/tag/${tag}`}>{tag}</Tag>
+            <Tag>{tag}</Tag>
           ))}
         </div>
       )}
