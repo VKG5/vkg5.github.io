@@ -34,36 +34,28 @@ const filteredPosts = currentCategory
       <!-- Category Filter -->
       <div class="mb-10 pb-6 border-b border-border overflow-x-auto no-scrollbar" data-animate>
         <div class="flex items-center gap-2 min-w-max">
-          <a
-            href="/blog"
-            class={`px-4 py-2 text-sm font-medium rounded-lg transition-colors
-              ${!currentCategory 
-                ? 'bg-accent text-white' 
-                : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
-              }`}
+          <button
+            data-filter="all"
+            class="filter-btn px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-accent text-white"
           >
             All
-          </a>
+          </button>
           {BLOG_CATEGORIES.map((cat) => (
-            <a
-              href={`/blog?category=${cat.slug}`}
-              class={`px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
-                ${currentCategory === cat.slug 
-                  ? 'bg-accent text-white' 
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
-                }`}
+            <button
+              data-filter={cat.slug}
+              class="filter-btn px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap text-text-secondary hover:text-text-primary hover:bg-bg-secondary"
             >
               {cat.label}
-            </a>
+            </button>
           ))}
         </div>
       </div>
       
       <!-- Posts Grid -->
       {filteredPosts.length > 0 ? (
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPosts.map((post, index) => (
-            <div data-animate style={`animation-delay: ${index * 50}ms`}>
+        <div id="posts-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.map((post, index) => (
+            <div data-animate style={`animation-delay: ${index * 50}ms`} data-category={post.data.category} class="post-item">
               <PostCard
                 title={post.data.title}
                 description={post.data.description}
@@ -91,4 +83,36 @@ const filteredPosts = currentCategory
       )}
     </div>
   </section>
+  
+  <script>
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const postItems = document.querySelectorAll('.post-item');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const filter = button.getAttribute('data-filter');
+        
+        // Update button styles
+        filterButtons.forEach(btn => {
+          if (btn === button) {
+            btn.classList.add('bg-accent', 'text-white');
+            btn.classList.remove('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
+          } else {
+            btn.classList.remove('bg-accent', 'text-white');
+            btn.classList.add('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
+          }
+        });
+        
+        // Filter posts
+        postItems.forEach(item => {
+          const category = item.getAttribute('data-category');
+          if (filter === 'all' || category === filter) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
 </BaseLayout>
