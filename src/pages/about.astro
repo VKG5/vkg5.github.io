@@ -6,36 +6,109 @@ import { SOCIAL_LINKS, TECHNOLOGIES } from '@/lib/constants';
 
 const experience = [
   {
-    company: 'Technicolor Games',
+    company: 'Zitro',
     role: 'Technical Artist',
-    period: '2022 - 2024',
-    clients: ['Rockstar Games', 'EA'],
-    description: 'Worked on AAA titles, developing tools and pipelines for art teams.',
+    period: '2025 - Present',
+    description:
+      'Developed tools, pipelines, and GPU-optimized shaders for a custom Godot 3.5.2 build. Built automation systems, asset processors, localization workflows, and editor tools that streamline content creation from Blender, Spine, and Photoshop into the engine.',
   },
   {
-    company: 'Indie Studios',
-    role: 'Technical Artist / Developer',
-    period: '2020 - 2022',
-    clients: ['UK & Indonesia Studios'],
-    description: 'Built custom tools and procedural systems for indie game projects.',
+    company: 'Upwork',
+    role: 'Technical Artist (Freelance)',
+    period: '2021 - Present',
+    description:
+      'Delivered tools and pipelines for various clients: Blender animation tools, Maya export pipelines, Unreal Engine puppeteering systems, and gameplay prototyping. Built C++ and Python tools used in production across multiple indie teams.',
+  },
+  {
+    company: 'Trinity Walton Club, Trinity College Dublin',
+    role: 'Course Author & Educator',
+    period: '2024 - 2025',
+    description:
+      'Designed and taught game development, Python programming, and Blender courses for young learners. Built full curricula, teaching materials, prototypes, and hands-on STEM content focusing on logic, animation, physics, and scripting.',
+  },
+  {
+    company: 'Technicolor Games',
+    role: 'Junior Technical Artist',
+    period: '2022 - 2023',
+    clients: ['Rockstar Games', 'Electronic Arts'],
+    description:
+      'Worked on Procedural Content Generation, tools, and technical art pipelines across Unreal, Maya, and Blender. Delivered R&D, troubleshooting, workflow automation, and knowledge transfer for large art teams. Awarded the Eureka Award for innovation.',
+  },
+  {
+    company: 'Sanmati Enterprises',
+    role: '3D Generalist / 3D Modeller (Intern)',
+    period: '2021',
+    description:
+      'Created optimized 3D models, established export pipelines for Unity/Unreal, and developed Blender Python scripts for animation tasks. Worked on VR/AR-ready assets and hard-surface modelling.',
+  },
+  {
+    company: 'Gametathya',
+    role: 'Game Dev & Asset Design Lead',
+    period: '2020',
+    description:
+      'Led a team of programmers and artists to build a third-person shooter demo using Unreal Engine and C++. Responsible for gameplay design, core mechanics, and asset workflows.',
+  },
+  {
+    company: 'ACM Student Chapter (Bennett University)',
+    role: 'Creative Head / Treasurer',
+    period: '2019 - 2020',
+    description:
+      'Managed creative projects, events, and team operations. Produced learning content, handled chapter fundraising, and led teams of 7–20 members.',
+  },
+];
+
+const education = [
+  {
+    institution: 'Trinity College Dublin',
+    degree: 'MSc, Computer Science — Augmented & Virtual Reality',
+    period: '2023 – 2024',
+    grade: 'Distinction',
+    description:
+      'Focused on real-time graphics, rendering, animation systems, machine learning, computer vision, and simulation. Strengths include GPU programming, real-time rendering, procedural systems, and graphics engineering.',
+    topics: [
+      'Computer Graphics',
+      'Real-Time Rendering',
+      'Machine Learning',
+      'Computer Vision',
+      'Real-Time Animation',
+      'Augmented & Virtual Reality',
+      'Mathematics of Light & Sound',
+      'Motion Picture Engineering',
+    ],
+  },
+  {
+    institution: 'Bennett University',
+    degree: 'BTech, Computer Science',
+    period: '2018 – 2022',
+    grade: '9.28 CGPA',
+    description:
+      'Built a strong foundation in programming, algorithms, game development, and 3D workflows. Gained experience in procedural generation, 3D modelling, and systems-level engineering.',
+    topics: [
+      'Data Structures & Algorithms',
+      'Object-Oriented Programming',
+      'Game Development',
+      'Procedural Content Generation',
+      '3D Modelling & Texturing',
+      'Database Systems',
+    ],
   },
 ];
 
 const highlights = [
   {
-    metric: '4+',
+    metric: '5+',
     label: 'Years with 3D Software',
-    sublabel: 'Blender, Houdini, Unreal',
+    sublabel: 'Blender, Houdini, Unreal Engine',
   },
   {
-    metric: '500+',
-    label: 'Artists Using My Tools',
-    sublabel: 'Lumi Tools users',
+    metric: '200+',
+    label: 'Students Taught',
+    sublabel: 'Python, Game Dev, Blender at Trinity College Dublin',
   },
   {
-    metric: '10+',
-    label: 'Shipped Projects',
-    sublabel: 'Tools, plugins, systems',
+    metric: '2',
+    label: 'Books Published',
+    sublabel: 'Technical Reviewer & Contributor',
   },
 ];
 ---
@@ -51,72 +124,99 @@ const highlights = [
         <header class="mb-12" data-animate>
           <h1 class="heading-1 mb-6">About</h1>
           <p class="lead">
-            I'm Varun Kumar Gupta—a Technical Artist and Game Developer who builds 
-            the systems that make creative work scale.
+            I'm Varun Kumar Gupta, aka Lumi, a Graphics Engineer and Technical Artist who enjoys building 
+            the systems and pipelines that make creative work easier and faster. Most of my time goes into 
+            procedural generation, real-time graphics, and writing tools that help artists get ideas on 
+            screen without fighting the software.
           </p>
         </header>
         
         <!-- Main content -->
         <div class="prose-custom" data-animate>
           <p>
-            I operate at the intersection of art and engineering. Where most see separate 
-            disciplines, I see opportunities for elegant automation. My work focuses on 
-            <strong>procedural content generation</strong>, <strong>tool development</strong>, 
-            and <strong>pipeline optimization</strong>—creating the invisible infrastructure 
-            that empowers artists to do their best work.
-          </p>
-          
-          <h2>The Path Here</h2>
-          
-          <p>
-            The path here wasn't linear. I started as an artist who got frustrated with 
-            repetitive tasks. That frustration became curiosity about automation. That 
-            curiosity became a career building tools that multiply creative output.
-          </p>
-          
-          <p>
-            Along the way, I've had the privilege of working with <strong>Rockstar Games</strong> 
-            and <strong>EA</strong> through my time at Technicolor Games, collaborating with 
-            indie studios across the UK and Indonesia, and building tools now used by hundreds 
-            of artists worldwide.
+            I focus on the engineering side of worldbuilding: procedural generation, real-time graphics, and tool development. 
+            Whether it’s terrain synthesis, automated asset workflows, custom renderers, or data-driven pipelines, 
+            I’m driven by one question: <em>How can code make creativity more efficient?</em>
           </p>
           
           <h2>What I Do</h2>
           
           <ul>
             <li>
-              <strong>Procedural Generation</strong> — Creating systems that generate content: 
-              terrain, vegetation, architecture, anything that can be described by rules.
+              <strong>Procedural Content Generation (PCG)</strong> : I work on rule-based systems for environments, assets, 
+              and worldbuilding. If something can be defined logically, I like figuring out how to make it generate itself.
             </li>
             <li>
-              <strong>Tool Development</strong> — Building artist-facing tools that eliminate 
-              friction: Blender add-ons, Unreal plugins, pipeline scripts.
+              <strong>Tool Development</strong> : C++, Python, Unreal, Blender; I build tools that remove repetitive work 
+              and let artists focus on the fun parts. Recently, I've been exploring lightweight AI-assisted workflows, 
+              but always with the same rule: Artists first, AI later.
             </li>
             <li>
-              <strong>Technical Art</strong> — Bridging art and engineering: shaders, materials, 
-              rigging systems, and rendering pipelines.
+              <strong>Technical Art</strong> : Bridging art and engineering: Shaders, materials, rigging logic, rendering 
+              quirks; basically the technical glue between code and visuals.
             </li>
           </ul>
           
           <h2>Technical Foundation</h2>
           
           <p>
-            My toolkit includes C++, Python, Unreal Engine, Blender, Houdini, and various 
-            graphics APIs (OpenGL, HLSL). I'm particularly interested in the GPU side of 
-            things—compute shaders, custom renderers, and real-time graphics.
+            Right now my work revolves around <strong>C++, Python, Unreal Engine, Blender, Houdini, and graphics programming.</strong>
+            OpenGL, Vulkan, HLSL, and compute-driven techniques. I’m especially interested in GPU-heavy systems 
+            and <strong>real-time procedural workflows.</strong>
           </p>
-          
+
+          <p>
+          I completed my <strong>Master’s</strong> in <strong>Computer Science (Augmented & Virtual Reality)</strong> from <strong>Trinity College Dublin</strong>, 
+          which pushed me deeper into rendering, simulation, and experimental graphics.
+          </p>
+
+          <p>
+          Some of the things I’ve been working on recently:
+          </p>
+
+          <ul>
+            <li> 
+              <strong>Procedural landscape generation</strong> using AI paired with a custom <strong>C++ OpenGL renderer</strong>.
+            </li>
+            <li>
+              <strong>Blender and Unreal tools</strong> focused on speeding up everyday artist workflows.
+            </li>
+            <li>
+              <strong>GPU-based procedural experiments</strong> for environments, scattering systems, and rule-driven worldbuilding.
+            </li>
+          </ul>
+
+          <p>
+            This is the direction I’m moving toward — more engineering, more systems work, and a lot more experimentation.
+          </p>
+
           <h2>Why I Write</h2>
           
           <p>
-            The game dev community taught me everything I know. This site is how I pay it 
-            forward. I write about what I learn, what I build, and the occasional thing 
-            that breaks spectacularly.
+            I read a lot. Books, papers, weird technical blogs hidden on page 31415926 of Google, and I’ve always felt that 
+            good learning material for PCG resources; especially for Blender, Unreal, and GPU workflows, are still scattered, 
+            shallow, and surprisingly hard to find.
           </p>
           
           <p>
-            If you're building something interesting—or just want to talk about procedural 
-            generation over email—I'd love to hear from you.
+            So I write to fix that.
+          </p>
+
+          <p>
+            My goal isn’t quantity, it’s clarity.
+          </p>
+
+          <p>
+            Every article I publish aims to be practical, technical, and focused: the kind of content I wish existed when I was learning.
+          </p>
+
+          <p>
+            I write to share what I’m building, what I’m studying, and the exact knowledge that pushes the field forward. One well-explained concept at a time.
+          </p>
+
+          <p>
+            If you're exploring similar ideas or building something procedural, feel free to reach out. 
+            I’m always happy to talk systems, tools, and worlds built by code.
           </p>
         </div>
         
@@ -148,6 +248,35 @@ const highlights = [
                     </p>
                   )}
                   <p class="text-sm text-text-secondary">{job.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <!-- Education -->
+        <div class="mt-12 pt-8 border-t border-border" data-animate>
+          <h3 class="heading-4 mb-6">Education</h3>
+          <div class="space-y-8">
+            {education.map((edu) => (
+              <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                <div class="sm:w-32 flex-shrink-0">
+                  <span class="text-sm text-text-tertiary">{edu.period}</span>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-text-primary">{edu.degree}</h4>
+                  <p class="text-text-secondary mb-1">{edu.institution}</p>
+                  <p class="text-sm text-text-tertiary mb-2">
+                    Grade: {edu.grade}
+                  </p>
+                  <p class="text-sm text-text-secondary mb-3">{edu.description}</p>
+                  {edu.topics && (
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      {edu.topics.map((topic) => (
+                        <Tag>{topic}</Tag>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
