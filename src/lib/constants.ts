@@ -67,4 +67,8 @@ export const TECHNOLOGIES = [
   'GLSL',
   'Control Rig',
   'PCG Graphs',
+  'Vulknan',
+  'Real-Time Rendering',
+  'Shader Development',
+  'Tool Development',
 ] as const;

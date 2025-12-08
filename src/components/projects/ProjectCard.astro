@@ -13,8 +13,8 @@ interface Props {
 const { title, description, cover, technologies, href, featured } = Astro.props;
 ---
 
-<article class="group">
-  <a href={href} class="block card card-hover p-0 overflow-hidden">
+<article class="group h-full">
+  <a href={href} class="flex flex-col h-full card card-hover p-0 overflow-hidden min-h-[420px]">
     <!-- Image -->
     <div class="aspect-video overflow-hidden bg-bg-tertiary">
       <img
@@ -39,11 +39,11 @@ const { title, description, cover, technologies, href, featured } = Astro.props;
         {title}
       </h3>
       
-      <p class="text-text-secondary line-clamp-2 mb-4">
+      <p class="text-text-secondary line-clamp-2 mb-4 flex-grow">
         {description}
       </p>
       
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2 mt-auto">
         {technologies.slice(0, 4).map((tech) => (
           <Tag>{tech}</Tag>
         ))}
