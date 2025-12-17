@@ -14,7 +14,6 @@ const blog = defineCollection({
       'tool-development',
       'unreal-engine',
       'shaders',
-      'pipelines',
       'houdini',
       'blender',
       'research',

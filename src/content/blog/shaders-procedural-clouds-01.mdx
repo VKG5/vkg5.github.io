@@ -1,0 +1,222 @@
+---
+title: "Procedural 2D Clouds : A mathematical approach to nature"
+description: "A deep dive into generating procedural clouds using maths, followed by some tips to make them appear volumetric."
+publishedAt: 2025-12-17
+category: shaders
+tags: [tutorial, shaders, glsl, clouds, pcg, noise]
+series: shaders
+seriesOrder: 1
+featured: true
+draft: false
+---
+
+One of the biggest mistakes I made while developing this shader was not considering the computational cost. This cost me 2 days in live-production and a huge headache, but everything worked out
+in the end!
+
+Clouds are something that have fascinated me, you, and possibly everyone at one point in their life. Even though they appear 2D in the sky, they actually have a lot of volume and mass to them.
+This also means they are computationally heavy to render/generate. My target was to use something that was NOT a volume, and what else would work if not noise! I have a separate blog for different
+noises lined up, so keep out an eye ;)
+
+In this breakdown, I'll walk through a texture-based, optimized 2D cloud shader I wrote in Godot. It's the system I developed for a recent project at Zitro, and it handles a huge amount of clouds
+while maintaining performance. The is not a "cool clouds" shader, rather performance-centric.
+
+
+## Non-Procedural Noise
+
+The shader is built around a single-texture with **multiple textures packed** into **different channels**. If you are new to image processing, a typical image is usually comprised of `RGB channels`, usually 
+represented by `JPEG`. Often times there is a fourth one as well called `Alpha`, making the image `RGBA`, with the following extensions `PNG, EXR, TARGA, TIFF`. For this shader, the channels are as
+follows:
+
+- **Red Channel (R)**: Static shape mask
+- **Green Channel (G)**: Tiled, primary scrollable noise
+- **Blue Channel (B)**: Tiled, secondary scrollable noise
+
+### Why?
+
+Well, this way we avoid any expensive procedural noise functions and instead rely on **texture lookups**. These are almost always quicker, and since we have all the data in one image (AKA Texture), we only
+need one lookup and one load cycle. We can simply access the various channels/sub-textures using **swizzling** in **GLSL (OpenGL Shading Language)**. This is a shorthand notation of extracting data from a container data type such as vec3.
+
+```glsl
+void fragment() {
+    vec4 tex = texture(TEXTURE, UV);
+
+    // Getting red, green, blue channels
+    vec3 tex_rgb = tex.rgb;
+
+    // Getting individual channels
+    float red = tex.r;
+    float green = tex.g;
+    float blue = tex.b;
+}
+```
+
+You can grab the image below. The funky colours are due to different data present in each channel.
+
+<img src="/images/blog/pcg_clouds_2d/clouds_texture.png" class="w-full rounded-lg border border-border" />
+
+<div class="grid grid-cols-3 gap-4 my-8">
+    <div>
+        <img src="/images/blog/pcg_clouds_2d/clouds_texture_r.png" alt="Red channel - Static shape mask" class="w-full rounded-lg border border-border" />
+        <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Red: Shape Mask</p>
+    </div>
+    <div>
+        <img src="/images/blog/pcg_clouds_2d/clouds_texture_g.png" alt="Green channel - Primary scrollable noise" class="w-full rounded-lg border border-border" />
+        <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Green: Primary Noise</p>
+    </div>
+    <div>
+        <img src="/images/blog/pcg_clouds_2d/clouds_texture_b.png" alt="Blue channel - Secondary scrollable noise" class="w-full rounded-lg border border-border" />
+        <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Blue: Secondary Noise</p>
+    </div>
+</div>
+
+If you use [Unreal Engine](https://www.unrealengine.com/en-US)/[Quixel](https://quixel.com/en-US), or any major asset shop, this is a very common technique to save texture lookups and memory. 
+I got introduced to the concept a few years ago, and I haven't been able to go back, it is truly the simplest optimization for any game.
+
+
+## Uniforms - Control Without Complexity
+
+Alright, now we know how to sample a texture. But how do we pass it on to the GPU? 
+
+**Uniforms!**
+
+Uniforms are special variables that act as a bridge between the CPU (Game Engine) and GPU (Shader). They are read-only parameters that remain constant across all vertices or fragments
+in a single draw call. Shaders run in parallel on thousands of pixels/vertices simulataneously. They cannot access you script variables directly as they are running on an entirely different
+processing environment, the GPU. Uniforms solve this by:
+
+- **Passing data once**: You set a uniform value on the CPU, and every shader invocation sees the same value
+- **Staying constant**: Unlike varying variables (which interpolate between vertices), uniforms don't change during a single render pass
+- **Being efficient**: One upload, many reads across all parallel threads
+
+### Common Use Cases
+
+- **Textures**: Passing texture samplers (like our shape mask and noise textures)
+- **Colors**: Theme colors, fog colors, etc.
+- **User settings & custom parameters**: Slider values, toggle states
+
+In our case, we'll use a uniform to pass our noise texture and shape mask to the fragment shader, making it accessible for cloud generation. Another great thing about uniforms is that you
+can make changes after compilation. A simple comaprison for uniforms can be made with **Material Instance** in Unreal Engine. The shader is **compiled once** and you can have **multiple variations** 
+for the same using uniforms. Analogous to **polymorphism** in **Object Oriented Programming (OOPs)**.
+
+
+## UV & Motion Controls
+
+```glsl
+// Uniforms
+uniform vec2 uv_scale = vec2(100, 75);
+
+// Wind control
+uniform vec2 direction = vec2(1.0, 0.0);
+uniform float cloud_scale = 1.5;
+uniform float speed : hint_range(-1.0, 1.0) = 0.03;
+```
+
+These uniforms define the spatial scale and motion of the clouds.
+
+`uv_scale` and `cloud_scale` is used to scale the UVs. This can cause stretching/squashing along with scaling, which is desired for clouds.
+
+`direction` and `speed` together define wind movement. They have been separated for granular control over both aspect.
+
+
+## Lighting & Composition Controls
+
+```glsl
+// Artistic Controls
+uniform float cloud_dark = 0.5;
+uniform float cloud_light = 0.3;
+uniform float cloud_cover : hint_range(-10.0, 1.0) = 0.2;
+uniform float cloud_alpha : hint_range(0.0, 3.0) = 0.25;
+uniform float sky_tint : hint_range(0.0, 1.0) = 0.6;
+
+// Sky Hue
+uniform vec4 sky_colour_01 : hint_color = vec4(0.2, 0.4, 0.6, 1.0);
+uniform vec4 sky_colour_02 : hint_color = vec4(1.0, 0.647, 0.0, 1.0);
+```
+
+These parameters are **artist-friendly**. As a technical artist and graphics engineer, it is my job to make these shaders/tools **accessible** to the artists.
+Parameters are a great way of doing so. I sat down with an artist and managed to get some incredible results based on their tweaking! The eye and experience
+of an artist should be respected more than it is nowadays.
+
+Instead of **physically-based lighting**, I use simple scalar parameters to control various aspects of the cloud. This ensures smooth performance in real-time
+and avoids reworking noise functions or the shader.
+
+
+## Vertex Shader - Why It Exists Here?
+
+The vertex shader runs only **four-times for a quad**, once per vertex. I am using a simple plane to render out the clouds for our project. This is helpful when
+you look at the holistic picture. Our target resolution is native `2160 x 6000`, sometimes even more. Considering I sample the noise texture multiple times, 
+an average of 15 per fragment, the total number of times I need to sample the texture would be:
+
+```
+2160 x 6000 = 12,960,000 (Total fragments)
+12,960,000 x 15 = 194,400,000 (Texture Samples)
+```
+
+Phew! That is a VERY large number. Thanks to modern GPUs, these computations do not mean a lot, but if your target is mobile devices, or weaker hardware, this becomes
+a problem. *Like it did for me, while usinng procedural noise (Oh yes, the count was almost 30x than this).*
+
+The vertex shader helps reduce some calculations that will remain constant throughout the lifetime of the shader.
+
+```glsl
+// flat varying vec2 cloud_uv : No interpolation, use vertex A's value
+varying vec2 cloud_uv;
+varying vec2 time_vec;
+varying float aspect_ratio;
+
+void vertex() {
+	aspect_ratio = (uv_scale.y != 0.0) ? (uv_scale.x / uv_scale.y) : 1.0;
+
+	// Fix aspect ratio so clouds look consistent on different screen sizes
+	cloud_uv = UV * vec2(aspect_ratio, 1.0) * cloud_scale;
+
+	// TIME for animating the clouds
+	time_vec = TIME * speed * direction;
+}
+```
+
+Anything that doesn't need per-pixel precision, such as *aspect ratio* or time-based offsets, is calculated here and passed down as varyings.
+
+While this may look like an insignificant optimization, but in shaders that are rendered across large screens, these choices add up.
+
+### Understanding the `varying` keyword
+
+The `varying` keyword is a bridge between vertex shader and fragment shader. It gets calculated once per vertex and then gets *interpolated* across the entire surface for every
+fragment (pixel) that gets rendered. Consider the following code snipped:
+
+```glsl
+// VERTEX SHADER (runs 4 times for a quad)
+// Computes and send interpolated value to fragment shader
+varying vec2 cloud_uv;
+
+void vertex() {
+    // This runs ONLY 4 times (once per corner of the quad)
+    cloud_uv = UV * vec2(aspect_ratio, 1.0) * cloud_scale;
+}
+
+// FRAGMENT SHADER (runs millions of times)
+varying vec2 cloud_uv;
+
+void fragment() {
+    // cloud_uv is automatically interpolated between the 4 vertex values
+    // So every pixel gets a smoothly blended value
+}
+```
+
+When the GPU processed a quad (rectangle):
+
+1. **Vertex Shader** calculates `cloud_uv` at each of the 4 vertices (corners)
+    - Top-left corner: cloud_uv = (0.0, 1.0)
+    - Top-right corner: cloud_uv = (1.0, 1.0)
+    - Bottom-left: cloud_uv = (0.0, 0.0)
+    - Bottom-right: cloud_uv = (1.0, 0.0)
+
+2. The GPU automatically interpolates these values across the surface
+    - A pixel in the center gets cloud_uv ≈ (0.5, 0.5)
+    - A pixel 25% from the left gets cloud_uv ≈ (0.25, y)
+
+3. Fragment Shader receives the interpolated value for each pixel
+
+## TODO : Explain Texture Lookup and Sampling, Fractal Brownian Motion (FBM), Animated Noise, Fragment Shader, Optimization (Viewport Rendering, Upscaling)
+
+---
+
+*Have questions about this approach? Find me on Twitter or drop a comment below.*
