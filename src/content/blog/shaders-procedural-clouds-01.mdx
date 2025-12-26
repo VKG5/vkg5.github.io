@@ -213,9 +213,256 @@ When the GPU processed a quad (rectangle):
     - A pixel in the center gets cloud_uv ≈ (0.5, 0.5)
     - A pixel 25% from the left gets cloud_uv ≈ (0.25, y)
 
-3. Fragment Shader receives the interpolated value for each pixel
+3. Fragment Shader receives the interpolated value for each pixel and runs the `void fragment()` code on each pixel.
 
-## TODO : Explain Texture Lookup and Sampling, Fractal Brownian Motion (FBM), Animated Noise, Fragment Shader, Optimization (Viewport Rendering, Upscaling)
+Having mentioned **texture lookup** and sampling multiple times, what do they actually mean?
+
+### Texture Lookup & Sampling
+
+The act of fetching a particular pixel's colour (texel) from a texture using UV coordinates. Instead of computing noise
+mathematically, the function samples noise directly from a texture channel (As shown above).
+
+The green and blue channels provide two independent noise sources,  which can be layered and animated separately. This
+keeps the shader fast and predictable across hardware. Why predictable? Each system's RNG (Random Number Generator) will
+produce a different value, which may cause artifacts or broken textures. The code below is used to sample noise based on
+a parameter (channel).
+
+```glsl
+float texture_noise(sampler2D tex, vec2 p, int channel) {
+	if(channel == 0) {
+		return texture(tex, p).g;
+	} else {
+		return texture(tex, p).b;
+	}
+}
+```
+
+Texture sampling is the process of using interpolated UV coordinates in the fragment shader to fetch texel values from
+a texture. A single texture lookup returns all channels (RGBA) so you can swizzle out the green and blue channels as
+independent noise sources for layering and animation. Swizzling is a shorthand in GLSL where you can access various
+channels in a container data-type by using:
+
+```glsl
+vec3 pos = vec3(0.1, -10.3, 4.0);
+
+// Extracting the X, Y, and Z channels and their combinations from a predefined vector
+float a = pos.x; // The resultant value will be 0.1
+vec2 b = pos.yx; // The resultant vector will be (-10.3, 0.1)
+vec3 c = pos.zzy; // The resultant vector will be (4.0, 4.0, -10.3)
+```
+
+Swizzling provides you an easy way to grab different components of a data container (for example: color.rgb, pos.xy or 
+pos.zzx), allowing concise access, reordering and replication of channels.
+
+### Fractal Brownian Motion (FMB)
+
+Adding different iterations of noise *(octaves)*, where we sample the noise at different scales, rotations, and decreasing amplitude. This way
+we get more granulatiry in the noise and get more fine detail. This technique is called **Fractal Browning Motion (fBM), or simply,
+fractal noise. The following code achieves the same:
+
+```glsl
+// Rotation matrix for FBM layers
+const mat2 m = mat2(vec2(1.6, 1.2), vec2(-1.2, 1.6));
+
+float fbm(sampler2D tex, vec2 n, int channel) {
+	float total = 0.0, amplitude = 0.1;
+	for(int i=0; i < 4; i++) {
+		total += texture_noise(tex, n, channel) * amplitude;
+		n = m * n;
+		amplitude *= 0.4;
+	}
+	return total;
+}
+```
+
+Here `m` is a constant matrix, which helps break visible tiling while keeping the math minimal.
+
+### Animated Noise
+
+This function builds animated noise by repeatedly samplign the texture while progressively altering UVs and weights. This function is the
+*heart* of the shader.
+
+By exposing various parameters, the same function can be reused for:
+- Cloud Shape
+- Detail Breakup
+- Colour Variation
+
+For our use case, we have used a extracted the colours extracts from the sky. This is done in the `void fragment()` function. Below you can find the
+noise animation function that I have used for generating the clouds:
+
+```glsl
+// Optimized animation function using texture lookups
+float animate_noise(sampler2D tex, int channel, vec2 time_offset, vec2 uv, float q, float uv_step, float weight, float weight_step, int steps) {
+	float val = 0.0;
+	vec2 uv2 = uv * uv_step - q + time_offset;
+	
+	for(int i = 0; i < steps; i++) {
+		val += abs(weight * texture_noise(tex, uv2, channel));
+		uv2 = m * uv2 + time_offset;
+		weight *= weight_step;
+	}
+	
+	return val;
+}
+```
+
+## Fragment Shader - Putting it All Together
+
+Below is a detailed breakdown of the fragment shader used. 
+
+### Masking
+
+The red channel of our sampled texture defines a mask where the clouds are allowed to exist. This keeps the edges clean, smooth, 
+and avoids procedural noise bleeding outside the intended shape.
+
+```glsl
+float mask = texture(TEXTURE, UV).r;
+```
+
+Using the shape is as simple as multiplying the alpha of the final image with this mask.
+
+```glsl
+COLOR.a *= mask;
+```
+
+This circumvents the need to write any edge blending logic and blurring/lowering opacity; at the cost of some memory. Below you
+can see the difference between having a mask and not. The left image (without mask) shows harsh edges and seams between textures.
+The right image (with mask) solves this issue, giving a much more natural result.
+
+<div class="grid grid-cols-2 gap-4 my-8">
+    <div>
+        <img src="/images/blog/pcg_clouds_2d/without_mask.png" alt="Without Mask - Clouds rendered on a plane without applying mask" class="w-full rounded-lg border border-border" />
+        <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Without Mask</p>
+    </div>
+    <div>
+        <img src="/images/blog/pcg_clouds_2d/with_mask.png" alt="With Mask - Clouds rendered on a plane with the mask" class="w-full rounded-lg border border-border" />
+        <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">With Mask</p>
+    </div>
+</div>
+
+### Noise Construction
+
+I first build a base FBM signal `q`, then layer ridged and smooth noise on top of it. By sampling different noise textures between each noise sample, it gives more natural,
+randomized results, breaking tiling, and adding visual complexity.
+
+```glsl
+// 0. Base FBM (Pass TEXTURE sampler)
+float q = fbm(TEXTURE, cloud_uv * 0.5, 0);
+```
+
+Here, a low-frequency FBM noise at half the UV scale is generated. This is used to **wrap/distort** UV coordinates of subsequent noise layers, adding organic irregularity. The `0` means
+it samples the **green channel**.
+
+```glsl
+// 1. Ridged Noise Shape (Pass TEXTURE sampler)
+float r = animate_noise(TEXTURE, 0, time_vec, cloud_uv, q, 1.0, 0.8, 0.7, 4);
+```
+
+This call generates the primary clouds shape using ridged noise (`abs()` in `animate_noise`). This means that the valleys become peaks, giving sharp clouds edges.
+
+```glsl
+// 2. Noise Shape (Pass TEXTURE sampler)
+float f = animate_noise(TEXTURE, 1, time_vec * 2.0, cloud_uv, q, 1.0, 0.7, 0.6, 4);
+
+f *= r + f;
+```
+
+This function generated secondary detail noise that moves twice as fast, `time_vec * 2.0`. It samples the noise in the blue channel, and has a slightly softer falloff. I am then combining
+both the noise layers non-linearly:
+
+- `r + f` = Ridged shape + detail noise.
+- `f *= (r + f)` = Detail noise is **amplified** where clouds exist.
+
+This creates **denser detail in cloud areas** and fade details in empty regions. It's a cheap way to fake volumetri density, clouds look thicker and more detailed in their centers.
+
+```glsl
+// 3. Noise Colour (Pass TEXTURE sampler)
+float c = animate_noise(TEXTURE, 0, time_vec * 5.0, cloud_uv, q, 2.0, 0.4, 0.6, 3);
+```
+
+This generates a fast-moving, high-frequency noise for colour/brightness variation. This moved 5x faster than base clouds (`time_vec * 5.0`), creating a shimmer effect. This adds **internal cloud lighing variation**,
+same parts darker, some brighter.
+
+Each layer runs at a different speed and scale, which creates the illusion of depth and evolving volume.
+
+### Colour & Composition
+
+The sky gradient is vertical and intentionally simple. The focus of the shader is motion and silhouette, not atmosphere scattering. *I am pretty interested in this as well, maybe a future blog?!*
+
+The `mix()` function is used to generate a gradient, simply based on 2 uniform colours.
+
+```glsl
+uniform vec4 sky_colour_01 : hint_color = vec4(0.2, 0.4, 0.6, 1.0);
+uniform vec4 sky_colour_02 : hint_color = vec4(1.0, 0.647, 0.0, 1.0);
+
+void fragment() {
+    vec3 sky_colour = mix(sky_colour_02.rgb, sky_colour_01.rgb, UV.y);
+}
+```
+
+Here `UV.y = 0` is the bottom and render `sky_colour_02`; `UV.y = 1`, the top renders `sky_colour_01`. The `mix()` function **linearly** interpolates between them.
+
+```glsl
+vec3 cloud_colour = vec3(1.1, 1.1, 0.9) * clamp((cloud_dark + cloud_light * c), 0.0, 1.0);
+```
+
+Using the `cloud_colour`, I get **subtle internal brightness variation**. The uniforms defined on top control the look and feel for the same.
+
+```glsl
+uniform float cloud_dark = 0.5;
+uniform float cloud_light = 0.3;
+uniform float cloud_cover : hint_range(-10.0, 1.0) = 0.2;
+uniform float cloud_alpha : hint_range(0.0, 3.0) = 0.25;
+
+void fragment() {
+    f = cloud_cover + cloud_alpha * f * r;
+}
+```
+
+I am recalculating the cloud density `f`. The calculations above control **how much clouds exist** at each pixel.
+- `cloud_cover` = Base amount of clouds (negative = less clouds).
+- `cloud_alpha * f * r` = Shape noise × ridged noise, scaled by alpha.
+
+```glsl
+float alpha = clamp(f + c, 0.0, 1.0);
+vec3 result = mix(sky_colour, clamp(sky_tint * sky_colour + cloud_colour, 0.0, 1.0), alpha);
+```
+
+`result` gives us the final `rgb` colours for our clouds. This takes into accoun the sky's colour. `sky_tint` controls the tint factor on the clouds. The final mix is done using the calculated `alpha`, which
+is the cloud coverage mask. Wherever `f + c` is high, show clouds and vice versa.
+
+Finally the end result is achieved by combining the resultant colour and alphas into a `vec4`.
+
+```glsl
+COLOR = vec4(result, alpha * mask);
+```
+
+### !Important Note!
+
+This shader only renders the clouds and not the sky background. If you want to render the sky in the background as well, then you have to modify the final output to the following:
+
+```glsl
+COLOR = vec4(result, mask);
+```
+
+What this does is use the mask as the alpha. You can also use `COLOR = vec4(result, 1.0)`, if you don't want a soft falloff to the scene.
+
+## Optimization (Viewport Rendering, Upscaling)
+
+This is by-far one of the most important section of this breakdown. Rendering at the local `2160 x 6000` resolution was causing a huge
+performance drop. The solution? Very simple, and probably intuitive. In this age of AI and upscaling, we will use the same. I am using
+Godot, which is an amazing open-source engine, for this task. The same concept can be used in any game engine using **Render Targets**.
+Render Targets are Dynamic 2D Textures, whose content can be updated during runtime. They are useful for a bunch of things, for example,
+a painting/drawing board in game. In Godot the hierarchy
+
+## Closing Section
+
+The shader is not about realism, it's about **control**, **performance**, and **readability**.
+
+By relying on texture-packed noise and pushing work into the vertex stage, the shader stays lightweight while remanining visually flexible.
+
+This approach works especially well for 2D skies, parallax backgrounds, and UI-driven scenes where full volumetric clouds would be
+un-necessary overhead.
 
 ---
 
