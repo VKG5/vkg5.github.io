@@ -152,7 +152,7 @@ an average of 15 per fragment, the total number of times I need to sample the te
 ```
 
 Phew! That is a VERY large number. Thanks to modern GPUs, these computations do not mean a lot, but if your target is mobile devices, or weaker hardware, this becomes
-a problem. *Like it did for me, while usinng procedural noise (Oh yes, the count was almost 30x than this).*
+a problem. *Like it did for me, while using procedural noise (Oh yes, the count was almost 30x than this).*
 
 The vertex shader helps reduce some calculations that will remain constant throughout the lifetime of the shader.
 
@@ -437,7 +437,7 @@ Finally the end result is achieved by combining the resultant colour and alphas 
 COLOR = vec4(result, alpha * mask);
 ```
 
-### !Important Note!
+### Important Note!
 
 This shader only renders the clouds and not the sky background. If you want to render the sky in the background as well, then you have to modify the final output to the following:
 
@@ -453,7 +453,96 @@ This is by-far one of the most important section of this breakdown. Rendering at
 performance drop. The solution? Very simple, and probably intuitive. In this age of AI and upscaling, we will use the same. I am using
 Godot, which is an amazing open-source engine, for this task. The same concept can be used in any game engine using **Render Targets**.
 Render Targets are Dynamic 2D Textures, whose content can be updated during runtime. They are useful for a bunch of things, for example,
-a painting/drawing board in game. In Godot the hierarchy
+a painting/drawing board in game. In Godot the hierarchy is as follows:
+
+<div className="my-8 p-6 rounded-lg border border-border" style={{backgroundColor: 'var(--color-bg-secondary)'}}>
+    <div className="flex flex-col items-center gap-6">
+        {/* Root Node */}
+        <div className="flex flex-col items-center">
+            <div className="px-6 py-3 rounded-lg shadow-md border-2" style={{backgroundColor: 'rgba(47, 195, 247, 0.1)', borderColor: 'var(--color-accent)'}}>
+                <span className="font-semibold text-lg" style={{color: 'var(--color-accent)'}}>Node2D</span>
+            </div>
+            <div className="w-0.5 h-8" style={{backgroundColor: 'var(--color-border)'}}></div>
+        </div>
+
+        {/* First Level Children */}
+        <div className="flex gap-12">
+            {/* TextureRect Branch */}
+            <div className="flex flex-col items-center">
+                <div className="w-0.5 h-6" style={{backgroundColor: 'var(--color-border)'}}></div>
+                <div className="px-5 py-2.5 rounded-lg shadow-sm border-2 transition-colors hover:border-accent" style={{backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)'}}>
+                    <span className="font-medium" style={{color: 'var(--color-text-primary)'}}>TextureRect</span>
+                </div>
+            </div>
+
+            {/* Viewport Branch */}
+            <div className="flex flex-col items-center">
+                <div className="w-0.5 h-6" style={{backgroundColor: 'var(--color-border)'}}></div>
+                <div className="px-5 py-2.5 rounded-lg shadow-sm border-2" style={{backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)'}}>
+                    <span className="font-medium" style={{color: 'var(--color-text-primary)'}}>Viewport</span>
+                </div>
+                <div className="w-0.5 h-8" style={{backgroundColor: 'var(--color-border)'}}></div>
+                
+                {/* Clouds Child */}
+                <div className="px-5 py-2.5 rounded-lg shadow-sm border-2" style={{backgroundColor: 'rgba(47, 195, 247, 0.05)', borderColor: 'rgba(47, 195, 247, 0.5)'}}>
+                    <span className="font-medium" style={{color: 'var(--color-accent)'}}>Clouds.tscn</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p className="text-sm text-center mt-6" style={{color: 'var(--color-text-tertiary)'}}>
+        Godot Scene Hierarchy for Cloud Rendering
+    </p>
+</div>
+
+Here `Node2D` is the root of the scene, which acts as a container for all children node. In the texture rect I have created a `ViewportTexture`, which renders the `Viewport` node in a larger size. Godot
+provides basic anti-aliasing algorithms such as **FXAA, MSAA**. This is a very basic method for upscaling and can be improved upon further with custom upscaling algorithms. One can create a custom node
+with the required features. For my `Clouds.tscn` scene I have rendered the clouds in 3 layers with different properties and resolutions. The layers are as follows:
+
+### Horizon Clouds
+These clouds are the farthest from the viewer's perspective. I've squashed the rectangle so the clouds appear compressed, faking a horizon effect. The size of the rectangle is `558 × 200`, which means:
+
+`558 × 200 = 111,600 pixels/fragments`
+
+With the optimized shader logic averaging **~15 texture samples per fragment** (across FBM + animated noise layers), the total computation becomes:
+
+`111,600 × 15 = 1,674,000 texture samples`
+
+The settings I've used for colours, and other exposed parameters of the shader are given below. These settings completely depend on the artistic intent of the scene, so feel free to play around!
+
+<img src="/images/blog/pcg_clouds_2d/bottom_clouds_params.png" class="w-full rounded-lg border border-border" />
+
+### Middle Clouds
+
+These clouds act as a middle-ground and move a bit faster than the background clouds to fake parallax. For this a rectangle of size `563 x 308` has been used. The clouds are slightly compressed.
+
+`563 x 308 = 173,404 pixels/fragments`
+
+`173,404 x 15 = 2,601,060 texture samples`
+
+The shader parameters are given below:
+
+<img src="/images/blog/pcg_clouds_2d/mid_clouds_params.png" class="w-full rounded-lg border border-border" />
+
+### Foreground Clouds
+
+These clouds make up the main focal point of the scene, these clouds will have the most details visible. The are rendered across a rectangle of size `574 x 500`
+
+`574 x 500 = 287,000 pixels/fragments`
+
+`287,000 x 15 = 4,305,000 texture samples`
+
+These clouds have a lot of detail and move the fastest across the screen, giving a fake sense of depth.  The shader parameters are given below:
+
+<img src="/images/blog/pcg_clouds_2d/top_clouds_params.png" class="w-full rounded-lg border border-border" />
+
+Calculating the total samples based on the above calculations, we get:
+
+`4,305,000 + 2,601,060 + 1,674,000 = 8,580,060 samples`
+
+This is dramatically lower than rendering at full `2160 × 6000` resolution, which would require **194,400,000 samples**. The loss in quality is also barely visible! Ingenious right? A simple trick can save
+your butt at times of crunch.
 
 ## Closing Section
 
@@ -466,4 +555,4 @@ un-necessary overhead.
 
 ---
 
-*Have questions about this approach? Find me on Twitter or drop a comment below.*
+*Have questions about this approach? Find me on Twitter or shoot me an email :)*
