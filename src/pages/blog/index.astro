@@ -2,7 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PostCard from '@/components/blog/PostCard.astro';
 import { getCollection } from 'astro:content';
-import { sortByDate, filterDrafts, getReadingTime } from '@/lib/utils';
+import { sortByDate, filterDrafts } from '@/lib/utils';
 import { BLOG_CATEGORIES } from '@/lib/constants';
 
 // Get all posts
@@ -62,7 +62,6 @@ const filteredPosts = currentCategory
                 publishedAt={post.data.publishedAt}
                 category={post.data.category}
                 tags={post.data.tags}
-                readingTime={8}
                 href={`/blog/${post.slug}`}
                 featured={post.data.featured}
               />
