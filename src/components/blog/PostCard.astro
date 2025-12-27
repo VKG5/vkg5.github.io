@@ -8,12 +8,11 @@ interface Props {
   publishedAt: Date;
   category: string;
   tags?: string[];
-  readingTime: number;
   href: string;
   featured?: boolean;
 }
 
-const { title, description, publishedAt, category, tags = [], readingTime, href, featured } = Astro.props;
+const { title, description, publishedAt, category, tags = [], href, featured } = Astro.props;
 ---
 
 <article class="group h-full">
@@ -25,10 +24,9 @@ const { title, description, publishedAt, category, tags = [], readingTime, href,
     )}
     
     <div class="capitalize text-sm font-medium text-text-secondary mb-2">{category.replace(/-/g, ' ')}</div>
-    <div class="text-xs text-text-tertiary mb-2">
+    <div class="text-xs text-text-tertiary mb-3">
       {formatDate(publishedAt, { month: 'short', day: 'numeric', year: 'numeric' })}
     </div>
-    <div class="text-xs text-text-tertiary mb-3">{readingTime} min read</div>
     
     <h3 class="text-xl font-semibold text-text-primary mb-3 group-hover:text-accent transition-colors">
       {title}
