@@ -19,17 +19,17 @@ const featuredProjects = allProjects.filter((p) => p.data.featured).slice(0, 3);
 const expertise = [
   {
     title: 'Procedural Generation',
-    description: 'Creating systems that generate content algorithmically—terrain, vegetation, architecture, and more.',
+    description: 'Creating systems that generate content algorithmically, terrain, vegetation, architecture, and more.',
     icon: '◇',
   },
   {
     title: 'Tool Development',
-    description: 'C++, Python, Unreal, DCCs — if something slows artists down, I automate it. If it’s already fast, I make it faster.',
+    description: 'C++, Python, Unreal, DCCs. If something slows artists down, I automate it. If it’s already fast, I make it faster.',
     icon: '◈',
   },
   {
     title: 'Technical Art (The Fun Glue Layer)',
-    description: 'Shaders, materials, rigs, and real-time systems — all the engineering that lives between “this looks cool” and “it runs at 60 FPS.”',
+    description: 'Shaders, materials, rigs, and real-time systems, all the engineering that lives between “this looks cool” and “it runs at 60 FPS.”',
     icon: '◆',
   },
 ];
@@ -99,7 +99,6 @@ const expertise = [
               {posts.map((post) => {
                 const date = new Date(post.data.publishedAt);
                 const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const readingTime = getReadingTime(post.body);
                 return (
                   <a href={`/blog/${post.slug}`} class="flex-shrink-0 w-80 group">
                     <div class="relative pl-8 pb-8 border-l-2 border-border group-hover:border-accent transition-colors min-h-60 flex flex-col">
@@ -111,7 +110,6 @@ const expertise = [
                       )}
                       <div class="capitalize text-sm font-medium text-text-secondary mb-2">{post.data.category.replace(/-/g, ' ')}</div>
                       <div class="text-xs text-text-tertiary mb-2">{formattedDate}</div>
-                      <div class="text-xs text-text-tertiary mb-3">{readingTime} min read</div>
                       <h3 class="text-lg font-semibold text-text-primary group-hover:text-accent transition-colors">{post.data.title}</h3>
                     </div>
                   </a>
