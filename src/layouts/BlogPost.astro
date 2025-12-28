@@ -137,26 +137,28 @@ const readingTime = getReadingTime(content);
 <script>
   // Handle TOC sidebar positioning to avoid footer overlap
   function initTocPositioning() {
-    const toc = document.getElementById('toc-sidebar');
-    const footer = document.querySelector('footer.border-t');
+    const toc = document.getElementById('toc-sidebar') as HTMLElement | null;
+    const footer = document.querySelector('footer.border-t') as HTMLElement | null;
     
     if (!toc || !footer) return;
     
+    const tocElement = toc;
+    const footerElement = footer;
     const topOffset = 128; // top-32 = 8rem = 128px
     const bottomPadding = 32; // Extra padding from footer
     
     function updateTocPosition() {
-      const footerRect = footer.getBoundingClientRect();
+      const footerRect = footerElement.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
       // Calculate available height
       // If footer is visible, limit the TOC height
       if (footerRect.top < viewportHeight) {
         const availableHeight = footerRect.top - topOffset - bottomPadding;
-        toc.style.maxHeight = `${Math.max(availableHeight, 100)}px`;
+        tocElement.style.maxHeight = `${Math.max(availableHeight, 100)}px`;
       } else {
         // Footer not visible, use full available space
-        toc.style.maxHeight = `calc(100vh - 10rem)`;
+        tocElement.style.maxHeight = `calc(100vh - 10rem)`;
       }
     }
     
