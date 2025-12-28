@@ -19,8 +19,15 @@ This project aims to simplify landscape generation by overcoming the learning cu
 Gaea, and node-based workflows such as Blender Geometry Nodes and Houdini. It combines:
 
 - **AI-Powered Generation**: Uses Stable Diffusion with custom-trained LoRA models to generate heightmaps.
+
+<img src="/images/projects/thesis/landscapePreview.png" class="w-full rounded-lg border border-border" />
+
 - **Real-Time Rendering:** OpenGL-based C++ application for visualizing and rendering terrains.
+
 - **User-Friendly GUI**: PyQt5 and ImGUI interface for easy interaction with the generation pipeline.
+
+<img src="/images/projects/thesis/UIBasic.png" class="w-full rounded-lg border border-border" />
+
 - **Dataset Collection**: Scripts for gathering and processing Digital Elevation Models (DEMs) from OpenTopography, custom data generated in Blender using Shaders, Geometry Nodes, and scripting.
 
 The work was developed as part of my Master’s dissertation and targets real-world production constraints in games, VFX, and virtual environments.
@@ -46,11 +53,11 @@ The system is designed as a modular, tile-based generation pipeline that convert
 
 <Mermaid chart={`
 flowchart TD
-    A[🗃️ DEM Dataset] --> B[⚙️ Preprocessing]
-    B --> C[🤖 Stable Diffusion + LoRA]
-    C --> D[🗺️ Heightmap Tiles]
-    D --> E[🧩 Terrain Assembly]
-    E --> F[🎮 3D Rendering Engine]
+    A[DEM Dataset] --> B[Preprocessing]
+    B --> C[Stable Diffusion + LoRA]
+    C --> D[Heightmap Tiles]
+    D --> E[Terrain Assembly]
+    E --> F[3D Rendering Engine]
     
     style A fill:#4FC3F7,stroke:#2B7A9E,color:#000
     style B fill:#4FC3F7,stroke:#2B7A9E,color:#000
@@ -60,42 +67,116 @@ flowchart TD
     style F fill:#4FC3F7,stroke:#2B7A9E,color:#000
 `} />
 
-### Stage 1: AI Generation
-Using Stable Diffusion with custom landscape-focused fine-tuning to generate concept images. The key was training on images with clear horizon lines and consistent lighting.
+## Component Breakdown
+### 1. Data & Representation Layer
 
-### Stage 2: Feature Extraction
-A Python pipeline extracts:
-- Heightmap approximation (from luminance gradients)
-- Biome classification (from color clusters)
-- Vegetation density (from texture analysis)
+#### Input Data
+- Digital Elevation Models (DEMs) sourced from OpenTopography and curated datasets.
+- Converted to **single-channel heightmaps** (grayscale), where luminance encodes elevation.
 
-### Stage 3: Terrain Reconstruction
-The C++ engine reconstructs 3D terrain using:
-- GPU-accelerated heightmap generation
-- Procedural detail overlay (rocks, grass, trees)
-- Atmospheric scattering for consistent lighting
+#### Why Heightmaps?
+- GPU-friendly and memory efficient
+- Engine-agnostic (Unreal, Unity, Godot, custom engines)
+- Direct mapping to vertex displacement
 
-## Results
+Heightmaps serve as the system’s **canonical** representation, decoupling generation from rendering.
 
-The system successfully generates coherent 3D landscapes from AI concepts, with some caveats:
-- Works best with landscapes that have clear depth cues
-- Struggles with highly stylized or abstract inputs
-- Generation quality depends heavily on the source image
+### 2. Diffusion Model Architecture
 
-## Technical Challenges
+The core generator is a **latent diffusion model (Stable Diffusion)** composed of:
 
-1. **Depth estimation** — 2D to 3D reconstruction is inherently ambiguous
-2. **Style consistency** — Matching procedural detail to AI aesthetics
-3. **Performance** — Real-time rendering while processing AI features
+<Mermaid chart={`
+flowchart TD
+    A[Image / Noise] --> B[VAE Encoder]
+    B --> C[Latent Space]
+    C --> D[U-Net & Cross Attenuation]
+    D --> E[VAE Decoder]
+    E --> F[Heightmap Output]
+    
+    style A fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style B fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style C fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style D fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style E fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style F fill:#4FC3F7,stroke:#2B7A9E,color:#000
+`} />
 
-## Outcome
+- **VAE (Variational Autoencoder)** compresses heightmaps into a latent space, reducing compute cost.
+- **U-Net** performs iterative denoising, learning terrain structure and spatial relationships.
+- **Cross-attention** enables conditioning using text prompts or guiding images.
 
-- Successfully defended thesis
-- Paper submitted to SIGGRAPH Asia (under review)
-- Open-sourced the renderer and feature extraction pipeline
+### 3. LoRA Fine-Tuning Strategy
 
-## Future Work
+Instead of retraining the full diffusion model:
 
-- Real-time Stable Diffusion integration (currently batch-processed)
-- Multi-view synthesis for more accurate depth
-- Vegetation and structure placement using AI suggestions
+- Base Stable Diffusion weights are frozen
+- **Low-Rank Adaptation (LoRA)** layers are injected into cross-attention blocks
+- Only rank-decomposed matrices are trained
+
+#### Benefits
+- Training possible with **20–100 samples**
+- Model sizes reduced to MBs instead of GBs
+- Enables rapid experimentation on consumer GPUs
+
+This makes the system practical for **indie teams**, **research prototyping**, and **tool development**.
+
+### 4. Tile-Based Generation System
+
+Large terrains are generated using overlapping tiles, enabling scalability without exhausting GPU memory.
+
+<Mermaid chart={`
+flowchart TD
+    A[Global Seed] --> B[Tile Coordinates]
+    B --> C[Conditional Diffusion]
+    C --> D[Seam-aware Heightmap Tiles]
+    
+    style A fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style B fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style C fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style D fill:#4FC3F7,stroke:#2B7A9E,color:#000
+`} />
+
+- **Neighbor-aware** conditioning reduces seams
+- **Deterministic seeds** allow exact regeneration
+- **Individual tiles** can be **re-generated** without invalidating the entire terrain
+
+This mirrors how open-world games stream terrain data at runtime. Similar to [World Partitions](https://dev.epicgames.com/documentation/en-us/unreal-engine/world-partition-in-unreal-engine) in Unreal Engine 5.
+
+#### 5. Terrain Reconstruction & Rendering
+
+Generated heightmaps are converted into 3D terrain via:
+- High-density mesh tessellation
+- Vertex displacement from height values
+- Procedural normal generation
+- UV mapping and shading
+
+A **custom lightweight renderer** was implemented to:
+- Minimize iteration time
+- Maintain control over mesh density and precision
+- Visualize results without full engine overhead
+
+## Why?
+
+This system enables **scalable world generation** by allowing large terrains to be prototyped and regenerated incrementally, with **deterministic results** suitable for production pipelines. 
+AI is used as a front-loaded generator that artists guide through prompts, masks, and seeds, ensuring **creative control** rather than automation. By operating on heightmaps, the workflow 
+integrates directly with existing engines and tools, while remaining extensible to related data such as material maps, foliage density, and biome masks. Positioning diffusion-based 
+PCG as a general-purpose foundation for world building.
+
+## Key Takeaways
+- Latent diffusion models **outperform GANs** for procedural terrain synthesis
+- Example-based learning removes the need for **explicit geological simulation**
+- Tile-aware diffusion enables **scalable open-world generation**
+- AI-assisted PCG works best as a **creative accelerator**, not a black box
+
+Below are some generated results:
+
+<img src="/images/projects/thesis/resultsW.png" class="w-full rounded-lg border border-border" />
+
+## TL;DR
+Built a diffusion-based procedural terrain system that generates production-ready heightmaps in seconds using Stable Diffusion fine-tuned with LoRA. 
+The pipeline scales to large worlds via tile-based generation, produces deterministic results for iteration and version control, and integrates directly with 
+existing game engines through standard heightmap workflows. Designed as an artist-guided tool, not a black box, enabling rapid prototyping without sacrificing control.
+
+---
+
+*Have any more questions? Find me on Twitter or shoot me an email :)*
