@@ -1,34 +1,64 @@
 ---
 title: "AI Procedural Landscape Generator"
 description: "Thesis project combining Stable Diffusion with a custom C++ OpenGL renderer for AI-guided terrain generation."
-publishedAt: 2024-08-20
+publishedAt: 2024-08-16
 status: completed
 category: research
 technologies: [C++, OpenGL, Python, Stable Diffusion, CUDA]
 featured: true
-cover: /images/projects/ai-landscape-cover.jpg
+cover: /images/projects/thesis/cover.jpg
 links:
-  github: https://github.com/VKG5/ai-landscape-generator
+  github: https://github.com/VKG5/Procedural-Landscape-Generation
 ---
+
+import Mermaid from '../../components/common/Mermaid.astro';
 
 ## Overview
 
-My thesis project exploring the intersection of AI image generation and real-time procedural graphics. The system uses Stable Diffusion to generate landscape concepts, then reconstructs them as 3D terrain in a custom OpenGL renderer.
+This project aims to simplify landscape generation by overcoming the learning curve and limitations of traditional tools like World Machine, 
+Gaea, and node-based workflows such as Blender Geometry Nodes and Houdini. It combines:
+
+- **AI-Powered Generation**: Uses Stable Diffusion with custom-trained LoRA models to generate heightmaps.
+- **Real-Time Rendering:** OpenGL-based C++ application for visualizing and rendering terrains.
+- **User-Friendly GUI**: PyQt5 and ImGUI interface for easy interaction with the generation pipeline.
+- **Dataset Collection**: Scripts for gathering and processing Digital Elevation Models (DEMs) from OpenTopography, custom data generated in Blender using Shaders, Geometry Nodes, and scripting.
+
+The work was developed as part of my Master’s dissertation and targets real-world production constraints in games, VFX, and virtual environments.
 
 ## Research Question
 
-Can we use 2D AI-generated images as meaningful input for 3D procedural generation systems?
+This project investigates the use of **latent diffusion models for procedural terrain synthesis**, with a focus on generating high-quality heightmaps that can be directly converted into large-scale 
+3D landscapes. The primary objective was to replace parameter-heavy, simulation-driven terrain workflows with a **data-driven**, **example-based system** that remains fast, controllable, and reproducible.
 
-The answer, it turns out, is "yes, with significant preprocessing."
+## Technical Motivation
+
+Traditional procedural terrain pipelines rely on fractals, erosion solvers, and node-based graphs. While physically motivated, these approaches suffer from:
+- High iteration cost
+- Complex parameter spaces
+- Limited scalability for large terrains
+
+Recent GAN-based solutions improve automation but introduce instability, tiling artifacts, and large dataset requirements. This project explores Stable Diffusion fine-tuned for 
+heightmap generation as a more **scalable** alternative, leveraging **latent space efficiency** and **transfer learning** to achieve higher fidelity with significantly lower training cost.
 
 ## System Architecture
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│ Stable Diffusion│────▶│ Feature Extract │────▶│ Terrain Engine  │
-│ (2D Generation) │     │ (Python/OpenCV) │     │ (C++/OpenGL)    │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-```
+The system is designed as a modular, tile-based generation pipeline that converts noise into heightmaps and then into real-time 3D terrain.
+
+<Mermaid chart={`
+flowchart TD
+    A[🗃️ DEM Dataset] --> B[⚙️ Preprocessing]
+    B --> C[🤖 Stable Diffusion + LoRA]
+    C --> D[🗺️ Heightmap Tiles]
+    D --> E[🧩 Terrain Assembly]
+    E --> F[🎮 3D Rendering Engine]
+    
+    style A fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style B fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style C fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style D fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style E fill:#4FC3F7,stroke:#2B7A9E,color:#000
+    style F fill:#4FC3F7,stroke:#2B7A9E,color:#000
+`} />
 
 ### Stage 1: AI Generation
 Using Stable Diffusion with custom landscape-focused fine-tuning to generate concept images. The key was training on images with clear horizon lines and consistent lighting.
