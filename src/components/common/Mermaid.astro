@@ -1,0 +1,143 @@
+---
+interface Props {
+  chart: string;
+  class?: string;
+}
+
+const { chart, class: className = '' } = Astro.props;
+const uniqueId = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+---
+
+<div class={`mermaid-wrapper ${className}`} data-mermaid-id={uniqueId}>
+  <pre id={uniqueId} class="mermaid" data-chart={chart}>{chart}</pre>
+</div>
+
+<script>
+  let mermaidModule: any = null;
+
+  async function getMermaid() {
+    if (!mermaidModule) {
+      mermaidModule = (await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')).default;
+    }
+    return mermaidModule;
+  }
+
+  function getThemeConfig() {
+    const isDark = document.documentElement.classList.contains('dark');
+    return {
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#4FC3F7',
+        primaryTextColor: '#000000',
+        primaryBorderColor: '#2B7A9E',
+        lineColor: isDark ? '#9D9D9D' : '#333333',
+        secondaryColor: '#4FC3F7',
+        tertiaryColor: '#4FC3F7',
+        background: 'transparent',
+        mainBkg: '#4FC3F7',
+        nodeBorder: '#2B7A9E',
+        nodeTextColor: '#000000',
+        clusterBkg: isDark ? '#333337' : '#F5F5F5',
+        clusterBorder: '#2B7A9E',
+        titleColor: '#000000',
+        edgeLabelBackground: isDark ? '#2A2A2E' : '#F8F9FA',
+        textColor: '#000000',
+      },
+      flowchart: {
+        curve: 'basis',
+        padding: 20,
+        htmlLabels: true,
+      },
+    };
+  }
+
+  async function renderDiagrams() {
+    const mermaid = await getMermaid();
+    mermaid.initialize(getThemeConfig());
+
+    const diagrams = document.querySelectorAll('.mermaid[data-chart]');
+    
+    for (const el of diagrams) {
+      const chart = el.getAttribute('data-chart');
+      if (!chart) continue;
+      
+      const id = el.id || `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+      
+      try {
+        const { svg } = await mermaid.render(id + '-svg', chart);
+        el.innerHTML = svg;
+        
+        // Force black text color on all text elements after render
+        el.querySelectorAll('text, span, div, p, foreignObject *').forEach((textEl) => {
+          (textEl as HTMLElement).style.setProperty('fill', '#000000', 'important');
+          (textEl as HTMLElement).style.setProperty('color', '#000000', 'important');
+        });
+        
+        // Also target specific mermaid classes
+        el.querySelectorAll('.nodeLabel, .edgeLabel, .label').forEach((labelEl) => {
+          (labelEl as HTMLElement).style.setProperty('fill', '#000000', 'important');
+          (labelEl as HTMLElement).style.setProperty('color', '#000000', 'important');
+        });
+      } catch (e) {
+        console.error('Mermaid render error:', e);
+      }
+    }
+  }
+
+  // Run on initial load
+  renderDiagrams();
+
+  // Re-render when theme changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        renderDiagrams();
+      }
+    });
+  });
+
+  observer.observe(document.documentElement, { attributes: true });
+</script>
+
+<style>
+  .mermaid-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+    overflow-x: auto;
+  }
+  
+  .mermaid {
+    background: transparent !important;
+    font-family: inherit;
+  }
+
+  /* Ensure SVG scales properly */
+  .mermaid :global(svg) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Force black text color on all node labels regardless of theme */
+  .mermaid :global(.nodeLabel),
+  .mermaid :global(.node text),
+  .mermaid :global(.label text),
+  .mermaid :global(.flowchart-label text),
+  .mermaid :global(text.nodeLabel),
+  .mermaid :global(span.nodeLabel),
+  .mermaid :global(.label),
+  .mermaid :global(.label span),
+  .mermaid :global(foreignObject div),
+  .mermaid :global(foreignObject span) {
+    color: #000000 !important;
+    fill: #000000 !important;
+  }
+
+  /* Edge labels */
+  .mermaid :global(.edgeLabel text),
+  .mermaid :global(.edgeLabel span) {
+    color: #000000 !important;
+    fill: #000000 !important;
+  }
+</style>
