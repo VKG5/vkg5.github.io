@@ -66,13 +66,15 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     
     <!-- Theme -->
-    <meta name="theme-color" content="#1F1F1F" />
+    <meta name="theme-color" content="#0B0B0D" />
   </head>
   
   <body class="min-h-screen flex flex-col antialiased">
+    <div class="noise-overlay"></div>
+    <div class="custom-cursor" id="custom-cursor"></div>
     <Header />
     
     <!-- Social Links Sidebar -->
@@ -135,7 +137,7 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
         const isDark = document.documentElement.classList.contains('dark');
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', isDark ? '#1F1F1F' : '#FFFFFF');
+          metaThemeColor.setAttribute('content', isDark ? '#0B0B0D' : '#F5F0E6');
         }
       }
       
@@ -152,25 +154,61 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
     
     <!-- Scroll animations -->
     <script>
-      const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.1,
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-slide-up');
-            entry.target.classList.remove('opacity-0', 'translate-y-4');
-            observer.unobserve(entry.target);
-          }
+      document.addEventListener('DOMContentLoaded', () => {
+        const revealObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        }, {
+          root: null,
+          rootMargin: '0px 0px -10% 0px',
+          threshold: 0.1,
         });
-      }, observerOptions);
 
-      document.querySelectorAll('[data-animate]').forEach((el) => {
-        el.classList.add('opacity-0', 'translate-y-4');
-        observer.observe(el);
+        document.querySelectorAll('.reveal, .reveal-children, [data-animate]').forEach((el) => {
+          el.classList.add('reveal');
+          revealObserver.observe(el);
+        });
+      });
+    </script>
+    
+    <!-- Custom cursor -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const cursor = document.getElementById('custom-cursor');
+        if (!cursor || window.matchMedia('(pointer: coarse)').matches) {
+          cursor?.remove();
+          return;
+        }
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let cursorX = 0;
+        let cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+          if (!cursor) return;
+          cursorX += (mouseX - cursorX) * 0.15;
+          cursorY += (mouseY - cursorY) * 0.15;
+          cursor.style.left = cursorX + 'px';
+          cursor.style.top = cursorY + 'px';
+          requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        const interactiveElements = document.querySelectorAll('a, button, [role="button"], input, textarea, select, .hover-glow, .tech-frame, .card');
+        interactiveElements.forEach((el) => {
+          el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+          el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+        });
       });
     </script>
     

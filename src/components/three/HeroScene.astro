@@ -1,0 +1,196 @@
+---
+export interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class={`hero-scene-container ${className}`}>
+  <canvas id="hero-canvas" class="hero-canvas"></canvas>
+</div>
+
+<script>
+  async function initHeroScene() {
+    const THREE = await import('three');
+    const container = document.querySelector('.hero-scene-container') as HTMLElement | null;
+    const canvas = document.getElementById('hero-canvas') as HTMLCanvasElement | null;
+    if (!container || !canvas) return;
+
+    // Theme-aware colors
+    const isDark = () => document.documentElement.classList.contains('dark');
+    const getColors = () => ({
+      wireframe: isDark() ? 0xff8c42 : 0x7a2e05,
+      core: isDark() ? 0xff8c42 : 0xa64b12,
+      particle: isDark() ? 0xff8c42 : 0x4a1a04,
+      glow: isDark() ? 0xff8c42 : 0xffa366,
+    });
+
+    let colors = getColors();
+
+    const scene = new THREE.Scene();
+    scene.background = null;
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      100
+    );
+    camera.position.z = 5.4;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+    });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Main wireframe icosahedron
+    const geometry = new THREE.IcosahedronGeometry(1.5, 0);
+    const edges = new THREE.EdgesGeometry(geometry);
+    const material = new THREE.LineBasicMaterial({
+      color: colors.wireframe,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const wireframe = new THREE.LineSegments(edges, material);
+    scene.add(wireframe);
+
+    // Inner core
+    const coreGeometry = new THREE.IcosahedronGeometry(0.7, 0);
+    const coreMaterial = new THREE.MeshBasicMaterial({
+      color: colors.core,
+      transparent: true,
+      opacity: 0.12,
+      wireframe: true,
+    });
+    const core = new THREE.Mesh(coreGeometry, coreMaterial);
+    scene.add(core);
+
+    // Floating particles
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particleCount = 100;
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 8;
+      positions[i + 1] = (Math.random() - 0.5) * 8;
+      positions[i + 2] = (Math.random() - 0.5) * 4;
+    }
+
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particlesMaterial = new THREE.PointsMaterial({
+      color: colors.particle,
+      size: 0.035,
+      transparent: true,
+      opacity: 0.6,
+    });
+    const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particles);
+
+    // Mouse interaction
+    let mouseX = 0;
+    let mouseY = 0;
+    const targetRotation = { x: 0, y: 0 };
+
+    function onMouseMove(event: MouseEvent) {
+      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+
+    // Theme change handler
+    const themeObserver = new MutationObserver(() => {
+      const newColors = getColors();
+      material.color.setHex(newColors.wireframe);
+      coreMaterial.color.setHex(newColors.core);
+      particlesMaterial.color.setHex(newColors.particle);
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    // Animation loop
+    let animationId: number;
+    let startTime = performance.now();
+
+    function animate() {
+      animationId = requestAnimationFrame(animate);
+      const elapsedTime = (performance.now() - startTime) / 1000;
+
+      targetRotation.y = mouseX * 0.6;
+      targetRotation.x = mouseY * 0.4;
+
+      wireframe.rotation.y += (targetRotation.y - wireframe.rotation.y) * 0.05;
+      wireframe.rotation.x += (targetRotation.x - wireframe.rotation.x) * 0.05;
+      wireframe.rotation.z += 0.002;
+
+      core.rotation.y -= 0.003;
+      core.rotation.x += 0.001;
+
+      particles.rotation.y = elapsedTime * 0.05;
+      particles.rotation.x = elapsedTime * 0.02;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Resize handler
+    function handleResize() {
+      if (!container) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    document.addEventListener('astro:before-swap', () => {
+      cancelAnimationFrame(animationId);
+      document.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('resize', handleResize);
+      themeObserver.disconnect();
+      renderer.dispose();
+      geometry.dispose();
+      edges.dispose();
+      material.dispose();
+      coreGeometry.dispose();
+      coreMaterial.dispose();
+      particlesGeometry.dispose();
+      particlesMaterial.dispose();
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroScene);
+  } else {
+    initHeroScene();
+  }
+</script>
+
+<style>
+  .hero-scene-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .hero-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>
