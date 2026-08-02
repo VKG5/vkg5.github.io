@@ -51,6 +51,7 @@
             "tool-development",
             "unreal-engine",
             "shaders",
+            "pipelines",
             "houdini",
             "blender",
             "research"
@@ -78,9 +79,6 @@
           "default": false
         },
         "cover": {
-          "type": "string"
-        },
-        "$schema": {
           "type": "string"
         }
       },

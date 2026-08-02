@@ -51,7 +51,7 @@ Gaea, and node-based workflows such as Blender Geometry Nodes and Houdini. It co
 heightmap generation as a more <strong>scalable</strong> alternative, leveraging <strong>latent space efficiency</strong> and <strong>transfer learning</strong> to achieve higher fidelity with significantly lower training cost.</p>
 <h2 id="system-architecture">System Architecture</h2>
 <p>The system is designed as a modular, tile-based generation pipeline that converts noise into heightmaps and then into real-time 3D terrain.</p>
-<div class="mermaid-wrapper " data-mermaid-id="mermaid-pbkbv4r" data-astro-cid-k5klusja> <pre id="mermaid-pbkbv4r" class="mermaid" data-chart="
+<div class="mermaid-wrapper " data-mermaid-id="mermaid-j19i00p" data-astro-cid-k5klusja> <pre id="mermaid-j19i00p" class="mermaid" data-chart="
 flowchart TD
   A[DEM Dataset] --> B[Preprocessing]
   B --> C[Stable Diffusion + LoRA]
@@ -96,7 +96,7 @@ flowchart TD
 <p>Heightmaps serve as the system’s <strong>canonical</strong> representation, decoupling generation from rendering.</p>
 <h3 id="2-diffusion-model-architecture">2. Diffusion Model Architecture</h3>
 <p>The core generator is a <strong>latent diffusion model (Stable Diffusion)</strong> composed of:</p>
-<div class="mermaid-wrapper " data-mermaid-id="mermaid-xsxvxhv" data-astro-cid-k5klusja> <pre id="mermaid-xsxvxhv" class="mermaid" data-chart="
+<div class="mermaid-wrapper " data-mermaid-id="mermaid-qcfe23e" data-astro-cid-k5klusja> <pre id="mermaid-qcfe23e" class="mermaid" data-chart="
 flowchart TD
   A[Image / Noise] --> B[VAE Encoder]
   B --> C[Latent Space]
@@ -146,7 +146,7 @@ flowchart TD
 <p>This makes the system practical for <strong>indie teams</strong>, <strong>research prototyping</strong>, and <strong>tool development</strong>.</p>
 <h3 id="4-tile-based-generation-system">4. Tile-Based Generation System</h3>
 <p>Large terrains are generated using overlapping tiles, enabling scalability without exhausting GPU memory.</p>
-<div class="mermaid-wrapper " data-mermaid-id="mermaid-66ohs9w" data-astro-cid-k5klusja> <pre id="mermaid-66ohs9w" class="mermaid" data-chart="
+<div class="mermaid-wrapper " data-mermaid-id="mermaid-42ibdqt" data-astro-cid-k5klusja> <pre id="mermaid-42ibdqt" class="mermaid" data-chart="
 flowchart TD
   A[Global Seed] --> B[Tile Coordinates]
   B --> C[Conditional Diffusion]
