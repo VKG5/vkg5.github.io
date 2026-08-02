@@ -5,30 +5,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        // VS Code Dark Modern Theme
         bg: {
-          primary: '#1F1F1F',
-          secondary: '#252526',
-          tertiary: '#2D2D30',
+          primary: 'var(--color-bg-primary)',
+          secondary: 'var(--color-bg-secondary)',
+          tertiary: 'var(--color-bg-tertiary)',
         },
         text: {
-          primary: '#CCCCCC',
-          secondary: '#9D9D9D',
-          tertiary: '#6E6E6E',
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+          tertiary: 'var(--color-text-tertiary)',
         },
         accent: {
-          DEFAULT: '#4FC3F7',
-          hover: '#29B6F6',
-          subtle: '#094771',
+          DEFAULT: 'var(--color-accent)',
+          hover: 'var(--color-accent-hover)',
+          subtle: 'var(--color-accent-subtle)',
         },
         border: {
-          DEFAULT: '#3E3E42',
-          hover: '#555555',
+          DEFAULT: 'var(--color-border)',
+          hover: 'var(--color-border-hover)',
         },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Instrument Sans', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'SF Mono', 'monospace'],
       },
       fontSize: {
@@ -42,7 +41,7 @@ export default {
       maxWidth: {
         '8xl': '88rem',
       },
-      typography: ({ theme }) => ({
+      typography: () => ({
         DEFAULT: {
           css: {
             '--tw-prose-body': 'var(--color-text-secondary)',
@@ -75,24 +74,12 @@ export default {
             strong: {
               color: 'var(--color-text-primary)',
             },
-            h1: {
-              color: 'var(--color-text-primary)',
-            },
-            h2: {
-              color: 'var(--color-text-primary)',
-            },
-            h3: {
-              color: 'var(--color-text-primary)',
-            },
-            h4: {
-              color: 'var(--color-text-primary)',
-            },
-            p: {
-              color: 'var(--color-text-secondary)',
-            },
-            li: {
-              color: 'var(--color-text-secondary)',
-            },
+            h1: { color: 'var(--color-text-primary)' },
+            h2: { color: 'var(--color-text-primary)' },
+            h3: { color: 'var(--color-text-primary)' },
+            h4: { color: 'var(--color-text-primary)' },
+            p: { color: 'var(--color-text-secondary)' },
+            li: { color: 'var(--color-text-secondary)' },
             code: {
               color: 'var(--color-text-primary)',
               backgroundColor: 'var(--color-bg-tertiary)',
@@ -100,12 +87,8 @@ export default {
               borderRadius: '0.25rem',
               fontWeight: '400',
             },
-            'code::before': {
-              content: '""',
-            },
-            'code::after': {
-              content: '""',
-            },
+            'code::before': { content: '""' },
+            'code::after': { content: '""' },
             pre: {
               backgroundColor: 'var(--color-bg-tertiary)',
               border: '1px solid var(--color-border)',

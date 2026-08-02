@@ -16,4 +16,17 @@ export default defineConfig({
       wrap: true,
     },
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/three')) {
+              return 'three';
+            }
+          },
+        },
+      },
+    },
+  },
 });

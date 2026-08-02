@@ -122,6 +122,7 @@ const highlights = [
       <div class="max-w-3xl mx-auto">
         <!-- Header -->
         <header class="mb-12" data-animate>
+          <span class="meta-label block mb-4">Profile</span>
           <h1 class="heading-1 mb-6">About</h1>
           <p class="lead">
             I'm Varun Kumar Gupta, aka Lumi, a Graphics Engineer and Technical Artist who enjoys building 
@@ -130,16 +131,16 @@ const highlights = [
             screen without fighting the software.
           </p>
         </header>
-        
+
         <!-- Main content -->
-        <div class="prose-custom" data-animate>
+        <div class="tech-frame p-6 md:p-10 bg-bg-secondary prose-custom mb-12" data-animate>
           <p>
             I focus on the engineering side of worldbuilding: procedural generation, real-time graphics, and tool development. 
-            Whether it’s terrain synthesis, automated asset workflows, custom renderers, or data-driven pipelines, 
-            I’m driven by one question: <em>How can code make creativity more efficient?</em>
+            Whether it's terrain synthesis, automated asset workflows, custom renderers, or data-driven pipelines, 
+            I'm driven by one question: <em>How can code make creativity more efficient?</em>
           </p>
           
-          <h2>What I Do</h2>
+          <h2 class="heading-hover">What I Do</h2>
           
           <ul>
             <li>
@@ -157,21 +158,21 @@ const highlights = [
             </li>
           </ul>
           
-          <h2>Technical Foundation</h2>
+          <h2 class="heading-hover">Technical Foundation</h2>
           
           <p>
             Right now my work revolves around <strong>C++, Python, Unreal Engine, Blender, Houdini, and graphics programming.</strong>
-            OpenGL, Vulkan, HLSL, and compute-driven techniques. I’m especially interested in GPU-heavy systems 
+            OpenGL, Vulkan, HLSL, and compute-driven techniques. I'm especially interested in GPU-heavy systems 
             and <strong>real-time procedural workflows.</strong>
           </p>
 
           <p>
-          I completed my <strong>Master’s</strong> in <strong>Computer Science (Augmented & Virtual Reality)</strong> from <strong>Trinity College Dublin</strong>, 
+          I completed my <strong>Master's</strong> in <strong>Computer Science (Augmented & Virtual Reality)</strong> from <strong>Trinity College Dublin</strong>, 
           which pushed me deeper into rendering, simulation, and experimental graphics.
           </p>
 
           <p>
-          Some of the things I’ve been working on recently:
+          Some of the things I've been working on recently:
           </p>
 
           <ul>
@@ -187,42 +188,50 @@ const highlights = [
           </ul>
 
           <p>
-            This is the direction I’m moving toward — more engineering, more systems work, and a lot more experimentation.
+            This is the direction I'm moving toward — more engineering, more systems work, and a lot more experimentation.
           </p>
 
-          <h2>Why I Write</h2>
+          <h2 class="heading-hover">Why I Write</h2>
           
           <p>
-            I read a lot. Books, papers, weird technical blogs hidden on page 31415926 of Google, and I’ve always felt that 
+            I read a lot. Books, papers, weird technical blogs hidden on page 31415926 of Google, and I've always felt that 
             good learning material for PCG resources; especially for Blender, Unreal, and GPU workflows, are still scattered, 
             shallow, and surprisingly hard to find.
           </p>
           
-          <p>
-            So I write to fix that.
-          </p>
-
-          <p>
-            My goal isn’t quantity, it’s clarity.
-          </p>
-
+          <p>So I write to fix that.</p>
+          <p>My goal isn't quantity, it's clarity.</p>
+          
           <p>
             Every article I publish aims to be practical, technical, and focused: the kind of content I wish existed when I was learning.
           </p>
-
+          
           <p>
-            I write to share what I’m building, what I’m studying, and the exact knowledge that pushes the field forward. One well-explained concept at a time.
+            I write to share what I'm building, what I'm studying, and the exact knowledge that pushes the field forward. One well-explained concept at a time.
           </p>
-
+          
           <p>
             If you're exploring similar ideas or building something procedural, feel free to reach out. 
-            I’m always happy to talk systems, tools, and worlds built by code.
+            I'm always happy to talk systems, tools, and worlds built by code.
           </p>
         </div>
         
+        <!-- Highlights -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-border border border-border rounded-xl overflow-hidden mb-12" data-animate>
+          {highlights.map((item) => (
+            <div class="bg-bg-secondary p-6 md:p-8 text-center tech-frame hover-glow">
+              <div class="text-3xl md:text-4xl font-bold text-text-primary mb-1">
+                {item.metric}
+              </div>
+              <div class="text-sm text-text-secondary">{item.label}</div>
+              <div class="text-xs text-text-tertiary">{item.sublabel}</div>
+            </div>
+          ))}
+        </div>
+        
         <!-- Skills -->
-        <div class="mt-12 pt-8 border-t border-border" data-animate>
-          <h3 class="heading-4 mb-6">Technologies</h3>
+        <div class="tech-frame p-6 md:p-8 bg-bg-secondary mb-12" data-animate>
+          <span class="meta-label block mb-4">Technologies</span>
           <div class="flex flex-wrap gap-2">
             {TECHNOLOGIES.map((tech) => (
               <Tag>{tech}</Tag>
@@ -231,23 +240,26 @@ const highlights = [
         </div>
         
         <!-- Experience -->
-        <div class="mt-12 pt-8 border-t border-border" data-animate>
-          <h3 class="heading-4 mb-6">Experience</h3>
-          <div class="space-y-8">
+        <div class="mb-12" data-animate>
+          <span class="meta-label block mb-6">Experience</span>
+          <div class="space-y-6">
             {experience.map((job) => (
-              <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-                <div class="sm:w-32 flex-shrink-0">
-                  <span class="text-sm text-text-tertiary">{job.period}</span>
-                </div>
-                <div>
-                  <h4 class="font-semibold text-text-primary">{job.role}</h4>
-                  <p class="text-text-secondary mb-1">{job.company}</p>
-                  {job.clients && (
-                    <p class="text-sm text-text-tertiary mb-2">
-                      Clients: {job.clients.join(', ')}
-                    </p>
-                  )}
-                  <p class="text-sm text-text-secondary">{job.description}</p>
+              <div class="tech-frame p-6 bg-bg-secondary hover-glow transition-colors">
+                <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div class="sm:w-36 flex-shrink-0">
+                    <span class="text-sm font-mono text-text-tertiary block">{job.period}</span>
+                    <span class="w-2 h-2 rounded-full bg-accent mt-2 inline-block"></span>
+                  </div>
+                  <div>
+                    <h4 class="font-display font-semibold text-text-primary text-lg mb-1">{job.role}</h4>
+                    <p class="text-text-secondary mb-1">{job.company}</p>
+                    {job.clients && (
+                      <p class="text-sm text-text-tertiary mb-2">
+                        Clients: {job.clients.join(', ')}
+                      </p>
+                    )}
+                    <p class="text-sm text-text-secondary leading-relaxed">{job.description}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -255,54 +267,43 @@ const highlights = [
         </div>
         
         <!-- Education -->
-        <div class="mt-12 pt-8 border-t border-border" data-animate>
-          <h3 class="heading-4 mb-6">Education</h3>
-          <div class="space-y-8">
+        <div class="mb-12" data-animate>
+          <span class="meta-label block mb-6">Education</span>
+          <div class="space-y-6">
             {education.map((edu) => (
-              <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-                <div class="sm:w-32 flex-shrink-0">
-                  <span class="text-sm text-text-tertiary">{edu.period}</span>
+              <div class="tech-frame p-6 bg-bg-secondary hover-glow">
+                <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div class="sm:w-36 flex-shrink-0">
+                    <span class="text-sm font-mono text-text-tertiary block">{edu.period}</span>
+                    <span class="w-2 h-2 rounded-full bg-accent mt-2 inline-block"></span>
+                  </div>
+                  <div>
+                    <h4 class="font-display font-semibold text-text-primary text-lg mb-1">{edu.degree}</h4>
+                    <p class="text-text-secondary mb-1">{edu.institution}</p>
+                    <p class="text-sm text-text-tertiary mb-3">
+                      Grade: {edu.grade}
+                    </p>
+                    <p class="text-sm text-text-secondary mb-4 leading-relaxed">{edu.description}</p>
+                    {edu.topics && (
+                      <div class="flex flex-wrap gap-2">
+                        {edu.topics.map((topic) => (
+                          <Tag>{topic}</Tag>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h4 class="font-semibold text-text-primary">{edu.degree}</h4>
-                  <p class="text-text-secondary mb-1">{edu.institution}</p>
-                  <p class="text-sm text-text-tertiary mb-2">
-                    Grade: {edu.grade}
-                  </p>
-                  <p class="text-sm text-text-secondary mb-3">{edu.description}</p>
-                  {edu.topics && (
-                    <div class="flex flex-wrap gap-2 mt-2">
-                      {edu.topics.map((topic) => (
-                        <Tag>{topic}</Tag>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <!-- Highlights -->
-        <div class="mt-12 pt-8 border-t border-border" data-animate>
-          <div class="grid grid-cols-3 gap-8">
-            {highlights.map((item) => (
-              <div class="text-center">
-                <div class="text-3xl md:text-4xl font-bold text-text-primary mb-1">
-                  {item.metric}
-                </div>
-                <div class="text-sm text-text-secondary">{item.label}</div>
-                <div class="text-xs text-text-tertiary">{item.sublabel}</div>
               </div>
             ))}
           </div>
         </div>
         
         <!-- CTA -->
-        <div class="mt-12 pt-8 border-t border-border text-center" data-animate>
-          <h3 class="heading-4 mb-4">Let's Connect</h3>
-          <p class="text-text-secondary mb-6">
-            Have a project in mind or just want to chat about tech art?
+        <div class="tech-frame p-8 md:p-12 bg-bg-secondary text-center" data-animate>
+          <span class="meta-label block mb-3">Let's Connect</span>
+          <h3 class="heading-4 mb-4">Want to build something together?</h3>
+          <p class="text-text-secondary mb-6 max-w-xl mx-auto">
+            Have a project in mind or just want to chat about tech art, procedural systems, or graphics engineering?
           </p>
           <div class="flex flex-wrap items-center justify-center gap-4">
             <Button href="/contact" variant="primary">Get in Touch</Button>
