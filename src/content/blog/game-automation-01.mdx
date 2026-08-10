@@ -35,8 +35,62 @@ On a normal desktop app, it works. On a game with a real anti-cheat, it usually 
 
 When any of those layers decides your keypress is fake, the game drops it silently. Your bot thinks it pressed `F`. The game thinks nothing happened. I went through this cycle enough times that I started questioning my sanity.
 
-<img src="/images/blog/hid_automation/software_input_blocked.png" class="w-full rounded-lg border border-border" />
+<div className="my-8 p-6 rounded-lg border border-border max-w-xl mx-auto" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+  <div className="flex flex-col items-center gap-0">
+    
+    {/* 1. Start Node */}
+    <div className="px-4 py-1.5 rounded-md border text-center shadow-sm" style={{ backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)' }}>
+      <span className="font-semibold text-xs" style={{ color: 'var(--color-text-primary)' }}>User Macro / Bot</span>
+    </div>
 
+    {/* Connecting Line */}
+    <div className="w-0.5 h-4" style={{ backgroundColor: 'var(--color-border)' }}></div>
+
+    {/* 2. Process Node */}
+    <div className="px-4 py-1.5 rounded-md border text-center shadow-sm" style={{ backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)' }}>
+      <span className="font-semibold text-xs" style={{ color: 'var(--color-text-primary)' }}>Generates Keypress (e.g., "F")</span>
+    </div>
+
+    {/* Connecting Line */}
+    <div className="w-0.5 h-4" style={{ backgroundColor: 'var(--color-border)' }}></div>
+
+    {/* 3. Driver Node */}
+    <div className="px-4 py-1.5 rounded-md border text-center shadow-sm" style={{ backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)' }}>
+      <span className="font-semibold text-xs" style={{ color: 'var(--color-text-primary)' }}>Kernel-Level Anti-Cheat Driver</span>
+    </div>
+
+    {/* Connecting Line */}
+    <div className="w-0.5 h-4" style={{ backgroundColor: 'var(--color-border)' }}></div>
+
+    {/* 4. Decision Node */}
+    <div className="px-4 py-1.5 rounded-md border-2 text-center shadow-sm" style={{ backgroundColor: 'rgba(47, 195, 247, 0.1)', borderColor: 'var(--color-accent)' }}>
+      <span className="font-semibold text-xs" style={{ color: 'var(--color-accent)' }}>Is Legitimate HID Device?</span>
+    </div>
+
+    {/* Branches Container */}
+    <div className="flex gap-6 mt-4">
+      
+      {/* Left Branch: Yes */}
+      <div className="flex flex-col items-center">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-1">Yes</span>
+        <div className="px-3 py-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-center">
+          <span className="font-medium text-xs text-emerald-400 block">Allows Event</span>
+          <span className="text-[10px] text-emerald-500/80 block mt-0.5">Game Updates State</span>
+        </div>
+      </div>
+
+      {/* Right Branch: No */}
+      <div className="flex flex-col items-center">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500 mb-1">No</span>
+        <div className="px-3 py-1.5 rounded-md border border-rose-500/30 bg-rose-500/10 text-center">
+          <span className="font-medium text-xs text-rose-400 block">Drops Event Silently</span>
+          <span className="text-[10px] text-rose-500/80 block mt-0.5">Game Ignores Input</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Software key events get filtered before the game ever acts on them.</p>
 
 The fundamental problem is that you are asking the OS, which the anti-cheat is also watching, to forge input on your behalf. It can inspect, validate, and discard those forgeries at several points. The only real fix is to make the input come from an actual hardware device.
@@ -48,8 +102,59 @@ The fundamental problem is that you are asking the OS, which the anti-cheat is a
 
 The trick, then, is obvious: make a microcontroller pretend to be a USB keyboard. The game sees a normal keyboard. The anti-cheat sees a normal keyboard. And your keypresses are treated as real hardware events because, as far as the OS is concerned, they are.
 
-<img src="/images/blog/hid_automation/arduino_hid_pipeline.png" class="w-full rounded-lg border border-border" />
+<div className="my-8 p-6 rounded-lg border border-border max-w-xl mx-auto" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+  <div className="flex flex-col items-center gap-0">
 
+    {/* 1. Host PC */}
+    <div className="px-5 py-2 rounded-md border text-center shadow-sm" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', borderColor: '#3b82f6' }}>
+      <span className="font-semibold text-xs text-blue-500 block">Host PC</span>
+    </div>
+
+    {/* Connector with Subtle Label */}
+    <div className="flex flex-col items-center my-1">
+      <div className="w-0.5 h-3" style={{ backgroundColor: 'var(--color-border)' }}></div>
+      <span className="text-[10px] text-center" style={{ color: 'var(--color-text-tertiary)' }}>
+        Serial Commands ("Press W") - Untrusted Software Command
+      </span>
+      <div className="w-0.5 h-3" style={{ backgroundColor: 'var(--color-border)' }}></div>
+    </div>
+
+    {/* 2. HID Emulation Controller */}
+    <div className="px-5 py-2 rounded-md border text-center shadow-sm" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', borderColor: '#22c55e' }}>
+      <span className="font-semibold text-xs text-emerald-500 block">HID Emulation Controller</span>
+    </div>
+
+    {/* Connector with Subtle Label */}
+    <div className="flex flex-col items-center my-1">
+      <div className="w-0.5 h-3" style={{ backgroundColor: 'var(--color-border)' }}></div>
+      <span className="text-[10px] text-center" style={{ color: 'var(--color-text-tertiary)' }}>
+        USB HID Keyboard Reports Trusted Hardware Event
+      </span>
+      <div className="w-0.5 h-3" style={{ backgroundColor: 'var(--color-border)' }}></div>
+    </div>
+
+    {/* 3. Hardware Interface */}
+    <div className="px-5 py-2 rounded-md border text-center shadow-sm" style={{ backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)' }}>
+      <span className="font-semibold text-xs" style={{ color: 'var(--color-text-primary)' }}>Hardware Interface</span>
+      <span className="text-[10px] block" style={{ color: 'var(--color-text-tertiary)' }}>(Keyboard & Mouse)</span>
+    </div>
+
+    {/* Connector with Subtle Label */}
+    <div className="flex flex-col items-center my-1">
+      <div className="w-0.5 h-3" style={{ backgroundColor: 'var(--color-border)' }}></div>
+      <span className="text-[10px] text-center" style={{ color: 'var(--color-text-tertiary)' }}>
+        Target PC Sees Trusted HID
+      </span>
+      <div className="w-0.5 h-3" style={{ backgroundColor: 'var(--color-border)' }}></div>
+    </div>
+
+    {/* 4. Target PC / Game Process */}
+    <div className="px-5 py-2 rounded-md border text-center shadow-sm" style={{ backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)' }}>
+      <span className="font-semibold text-xs" style={{ color: 'var(--color-text-primary)' }}>Target PC (Game Process)</span>
+    </div>
+
+  </div>
+</div>
 <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">PC sends serial commands; the Arduino converts them into real USB HID keyboard reports.</p>
 
 This is why boards like the **Arduino Leonardo**, **Arduino Micro**, and **SparkFun Pro Micro** are so common for this kind of work. Unlike a classic Arduino Uno R3, they use an **ATmega32u4** with built-in USB support, so they can expose a composite USB device that includes a HID keyboard interface. The newer **Arduino Uno R4** can do it too. A plain Uno R3 will not work here because its USB connection is handled by a separate serial converter chip that cannot act as a keyboard.
@@ -101,7 +206,7 @@ bool ScreenCapture::capture_roi(const RoiConfig& roi, std::vector<std::uint8_t>&
 
 The `SRCCOPY | CAPTUREBLT` flags matter because they copy pixels even if layered windows or overlays are involved. Some games composite UI through layers that a plain `SRCCOPY` might skip.
 
-<img src="/images/blog/hid_automation/roi_capture.png" class="w-full rounded-lg border border-border" />
+<img src="/images/blog/fishing_automation/roi_bounds.png" class="w-full rounded-lg border border-border" />
 
 <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">A tight ROI around the fishing meter keeps the capture cheap and predictable.</p>
 
@@ -169,7 +274,7 @@ FrameDetection FishingVision::analyze(const std::vector<std::uint8_t>& pixels,
 }
 ```
 
-<img src="/images/blog/hid_automation/vision_analysis.png" class="w-full rounded-lg border border-border" />
+<img src="/images/blog/fishing_automation/detected_mask.png" class="w-full rounded-lg border border-border" />
 
 <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">A single-row scan gives us the green zone boundaries and the cursor center.</p>
 
@@ -308,17 +413,6 @@ Bytes 2-7: up to six pressed key scancodes
 
 When `Keyboard.press('A')` runs, the Arduino sends a report with byte 2 set to the scancode for `A`. When `Keyboard.release('A')` runs, it sends a report with byte 2 cleared. The OS turns those reports into window messages and key states, exactly as it does for any physical keyboard.
 
-<div class="grid grid-cols-2 gap-4 my-8">
-    <div>
-        <img src="/images/blog/hid_automation/hid_report_press.png" alt="HID report with A pressed" class="w-full rounded-lg border border-border" />
-        <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">HID report: A pressed</p>
-    </div>
-    <div>
-        <img src="/images/blog/hid_automation/hid_report_release.png" alt="HID report with A released" class="w-full rounded-lg border border-border" />
-        <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">HID report: A released</p>
-    </div>
-</div>
-
 Because the reports originate from a real USB device driver stack, anti-cheat that blocks synthetic input at the API layer is bypassed. The input is no longer synthetic. It is a genuine hardware report from a genuine HID endpoint.
 
 
@@ -364,18 +458,55 @@ The C++ app reads `config.json` at startup:
 
 This means you can tune ROI and colors without recompiling.
 
-<img src="/images/blog/hid_automation/calibration_ui.png" class="w-full rounded-lg border border-border" />
+<img src="/images/blog/fishing_automation/irfan_view.png" class="w-full rounded-lg border border-border" />
 
 <p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Calibration UI: measure the meter coordinates and paste them into config.json.</p>
 
+
+I use [IrfanView](https://www.irfanview.com/) for viewing my PNGs. This free tool provides a bunch of useful features such as batch processing in a folder, across folders, 
+bounding information and more. AS shown in the picture above, the bounds start at the first two coordinates **(803, 68)** and have a `width x height` of **(964, 62)**. You can simply take a screen shot and mesaure the values based on your resolution.
+
+## Automating the Whole Loop
+
+Everything mentioned above forms one successful fishing experience. We are greeted with 3 different screens over the course of starting and re-looping the mini-game.
+These include the main screen.
+
+<img src="/images/blog/fishing_automation/Initial_Screen.png" class="w-full rounded-lg border border-border" />
+
+<p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Main Screen: First screen that shows up upon entering the mini-game.</p>
+
+This screen presents various options at the bottom-right of the screen, such as fish market, changing bait, and starting fishing **("F")**. After this there is a random wait period before the actual mini-game starts.
+
+<img src="/images/blog/fishing_automation/Pre_Screen.png" class="w-full rounded-lg border border-border" />
+
+<p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Intermediate/Pre Screen: This screen is to wait for the fish to take the bait.</p>
+
+No matter what you press on this screen, there will be no update/action in-game. This is a safe zone for the bot as it can spam **F** continuously and get into the
+fishing game eventually without needing any hefty vision or logic. The same logic follows the end-game, where it shows the banner of the fish caught, it details and requires the user
+to either press **Escape** or click in any empty area using the mouse. Again, for this part, the bot spams **Esc** at an interval of every 30 seconds, with the first one being pressed
+randomly between a set range of seconds (I've kept it between 7-11 seconds, since the average time to reach the game is 5-7 seconds). A little buffer is helpful to avoid exiting the mini-
+game altogether.
+
+<img src="/images/blog/fishing_automation/End_Screen.png" class="w-full rounded-lg border border-border" />
+
+<p class="text-sm text-center mt-2" style="color: var(--color-text-tertiary)">Intermediate/End Screen: This shows the fish you captured, it's weight and requires an explicit input by the user to exit.</p>
+
+As you might've seen in the [Step 5](#step-5-arduino-hid-firmware), **"F"** and **"ESC"** trigger at particular intervals. This runs throughout the runtime of the bot, making bypassing the initia and end screens
+very easy without requiring any extra code.
 
 ## Closing Section
 
 This bot is not about being undetectable. It is about being **practical**, **reliable**, and **readable**.
 
-By moving the actual key pressing to an Arduino HID keyboard, the input bypasses the software-level blocks that anti-cheat uses. The PC still does the thinking — vision, state machine, timing — while the Arduino provides the fingers that the OS already trusts.
+By moving the actual key pressing to an Arduino HID keyboard, the input bypasses the software-level blocks that anti-cheat uses. The PC still does the thinking; vision, state machine, timing. All while the Arduino provides the fingers that the OS already trusts.
 
-Combined with a tiny ROI capture and single-row color detection, the whole loop stays fast and runs comfortably at 60 FPS. It is not invisible, but it is a lot harder to block at the input layer than any software injector.
+Combined with a tiny ROI capture and single-row color detection, the whole loop stays fast and runs comfortably at high FPS. It is not invisible, but it is a lot harder to block and detect at the input layer than any software injector.
+
+
+### Intent
+
+This was done purely for research purposes, since I seldom find the time to _"fish"_ and I really don't know the first thing about fishing either. I do not promote using bots for automating games. I would say this was a good learning experience to simulate a tester
+or something along the lines for indie studios/small teams.
 
 ---
 
