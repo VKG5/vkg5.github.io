@@ -251,13 +251,13 @@ vec2 b = pos.yx; // The resultant vector will be (-10.3, 0.1)
 vec3 c = pos.zzy; // The resultant vector will be (4.0, 4.0, -10.3)
 ```
 
-Swizzling provides you an easy way to grab different components of a data container (for example: color.rgb, pos.xy or 
+**Swizzling** provides you an easy way to grab different components of a data container (for example: color.rgb, pos.xy or 
 pos.zzx), allowing concise access, reordering and replication of channels.
 
-### Fractal Brownian Motion (FMB)
+### Fractal Brownian Motion (FBM)
 
 Adding different iterations of noise *(octaves)*, where we sample the noise at different scales, rotations, and decreasing amplitude. This way
-we get more granulatiry in the noise and get more fine detail. This technique is called **Fractal Browning Motion (fBM), or simply,
+we get more granulatiry in the noise and get more fine detail. This technique is called **Fractal Brownian Motion**, or simply,
 fractal noise. The following code achieves the same:
 
 ```glsl
@@ -490,10 +490,6 @@ a painting/drawing board in game. In Godot the hierarchy is as follows:
             </div>
         </div>
     </div>
-
-    <p className="text-sm text-center mt-6" style={{color: 'var(--color-text-tertiary)'}}>
-        Godot Scene Hierarchy for Cloud Rendering
-    </p>
 </div>
 
 Here `Node2D` is the root of the scene, which acts as a container for all children node. In the texture rect I have created a `ViewportTexture`, which renders the `Viewport` node in a larger size. Godot
