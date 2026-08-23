@@ -1,0 +1,44 @@
+---
+title: "L-Systems"
+description: "A Blender add-on implementing Lindenmayer systems to generate procedural patterns and fractal structures from compact grammar rules."
+shortDescription: "A Blender procedural-generation tool that turns grammar rules into fractal geometry."
+publishedAt: 2024-09-01
+status: completed
+categories: [procedural]
+tier: 2
+order: 5
+technologies: [Python, Blender API, L-Systems, Formal Grammars, Procedural Generation]
+featured: false
+cover: /images/projects/lsystem.png
+links:
+  github: https://github.com/VKG5/L-Systems
+---
+
+## Problem
+
+A small set of rules can produce enormous complexity — that's the promise of Lindenmayer systems. The engineering question is how to expose formal grammars as a practical Blender tool without making users write parser code.
+
+## Approach
+
+Implement a string-rewriting engine inside a Blender add-on: users define an axiom and production rules, the system expands them over N iterations, and turtle interpretation converts the resulting symbol strings into geometry.
+
+## Architecture
+
+- **Grammar engine** — axiom + production rules expanded iteratively (Koch curves, snowflakes, dragon curves, fractal plants)
+- **Turtle interpreter** — symbol stream drives position/heading state to generate curves and branches
+- **State management** — push/pop semantics for branching structures
+- **Geometry output** — interpreted paths become Blender curve and mesh objects
+
+## Engineering Decisions
+
+- **Grammar-first design**: the text format is the interface; everything downstream is deterministic interpretation.
+- **Iteration depth exposed to the user**: complexity is a parameter, not a fixed setting.
+
+## Result
+
+A tool where typing a handful of characters produces Koch snowflakes, dragon curves, and fractal plants — complex geometry from compact rules.
+
+## What I Learned
+
+- Recursive systems are simple to specify and easy to get subtly wrong; state discipline matters.
+- Formal grammars are one of the highest leverage-per-line-of-code tools in procedural generation.

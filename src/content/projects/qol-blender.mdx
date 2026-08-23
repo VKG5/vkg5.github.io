@@ -1,0 +1,45 @@
+---
+title: "QoL Blender"
+description: "A collection of Blender productivity tools for scene management, visualization, asset workflows, rendering setup, and procedural mesh effects."
+shortDescription: "A collection of Blender utilities that remove repetitive production tasks and expose useful technical workflows through simple tools."
+publishedAt: 2024-04-01
+status: in-progress
+categories: [tools, pipelines]
+tier: 3
+order: 6
+technologies: [Python, Blender API, Geometry Nodes, Shaders, Asset Browser]
+featured: false
+links:
+  github: https://github.com/VKG5/QoL_Blender
+---
+
+## Problem
+
+Production work is full of small, repeated friction: cleaning up scenes, wrangling modifiers, setting up asset libraries, rebuilding the same render presets. Each task takes minutes; together they take days. The question is which of these deserve to become tools.
+
+## Approach
+
+Build a growing toolkit of small, focused utilities — each one solving one repetitive problem completely rather than half-solving many.
+
+## Architecture
+
+- **Lumi Tools** — scene cleanup, modifier management, data purging
+- **Asset workflows** — asset-library setup, asset marking, Asset Browser integration
+- **Visualization** — utility materials for inspecting scenes without touching final shaders
+- **Render presets** — quick world/render configuration switching
+- **Edge-wear generator** — procedural edge wear built with Geometry Nodes
+
+## Engineering Decisions
+
+- **One tool, one job**: utilities stay small and composable instead of merging into a monolithic panel.
+- **Asset Browser as infrastructure**: treating Blender's asset system as a pipeline component, not a convenience.
+- **Geometry Nodes over scripts where possible**: procedural node setups are editable by artists, not just developers.
+
+## Result
+
+A practical utility belt used across personal and production work — each tool removing a specific, recurring cost from the daily loop.
+
+## What I Learned
+
+- The best tooling targets the boring 80%, not the impressive 20%.
+- Small tools ship faster, get adopted faster, and are easier to maintain than platforms.

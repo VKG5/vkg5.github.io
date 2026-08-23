@@ -1,8 +1,9 @@
 // Site metadata
 export const SITE = {
   name: 'Varun Kumar Gupta',
-  title: 'Varun Kumar Gupta — Technical Artist & Game Developer',
-  description: 'Building tools, pipelines, and procedural systems that power creative workflows. Specializing in PCG, technical art, and tool development.',
+  title: 'Varun Kumar Gupta — Graphics Engineer & Unreal Engine Pipeline TD',
+  description:
+    'Graphics Engineer and Unreal Engine Pipeline TD at Brown Bag Films. I build graphics systems, tools, and pipelines that solve real production problems.',
   url: 'https://varungupta.dev',
   author: 'Varun Kumar Gupta',
   email: 'hello@varungupta.dev',
@@ -12,8 +13,8 @@ export const SITE = {
 // Navigation links
 export const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Projects', href: '/projects' },
+  { label: 'Work', href: '/projects' },
+  { label: 'Field Notes', href: '/blog' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ] as const;
@@ -26,17 +27,18 @@ export const SOCIAL_LINKS = {
   email: 'mailto:varunkumargupta914@gmail.com',
 } as const;
 
-// Blog categories
+// Blog categories (Field Notes taxonomy)
+// Slugs are kept stable so existing posts and URLs keep working.
 export const BLOG_CATEGORIES = [
-  { slug: 'procedural-generation', label: 'Procedural Generation', description: 'PCG systems, algorithms, implementations' },
-  { slug: 'technical-art', label: 'Technical Art', description: 'Shaders, materials, rendering techniques' },
-  { slug: 'tool-development', label: 'Tool Development', description: 'Building artist tools, plugins, scripts' },
-  { slug: 'unreal-engine', label: 'Unreal Engine', description: 'UE5 specific content, blueprints, C++' },
-  { slug: 'shaders', label: 'Shaders', description: 'HLSL, GLSL, shader development' },
-  { slug: 'pipelines', label: 'Pipelines', description: 'Workflow optimization, automation' },
+  { slug: 'procedural-generation', label: 'Procedural', description: 'Rule-driven systems, algorithms, worldbuilding' },
+  { slug: 'technical-art', label: 'Graphics', description: 'Rendering techniques, materials, visual systems' },
+  { slug: 'tool-development', label: 'Tools', description: 'Building tools, plugins, and scripts' },
+  { slug: 'unreal-engine', label: 'Unreal', description: 'UE5 content, blueprints, C++, pipeline' },
+  { slug: 'shaders', label: 'Rendering', description: 'HLSL, GLSL, shader development' },
+  { slug: 'pipelines', label: 'Pipelines', description: 'Workflow optimization, automation, production tech' },
   { slug: 'houdini', label: 'Houdini', description: 'Procedural workflows in Houdini' },
   { slug: 'blender', label: 'Blender', description: 'Blender tools, scripts, workflows' },
-  { slug: 'research', label: 'Research', description: 'Academic, experimental, theoretical' },
+  { slug: 'research', label: 'Research', description: 'Experiments, papers, prototypes' },
 ] as const;
 
 // Article series
@@ -47,28 +49,59 @@ export const ARTICLE_SERIES = [
   { slug: 'pipeline-patterns', label: 'Pipeline Patterns', description: 'Production-tested workflow architectures' },
 ] as const;
 
-// Project categories
+// Project categories — multi-category filtering (a project can belong to several)
 export const PROJECT_CATEGORIES = [
-  { slug: 'tool', label: 'Tools' },
-  { slug: 'research', label: 'Research' },
-  { slug: 'experiment', label: 'Experiments' },
-  { slug: 'client', label: 'Client Work' },
+  { slug: 'graphics', label: 'Graphics' },
+  { slug: 'systems', label: 'Systems' },
+  { slug: 'procedural', label: 'Procedural' },
+  { slug: 'tools', label: 'Tools' },
+  { slug: 'pipelines', label: 'Pipelines' },
+  { slug: 'computer-vision', label: 'Computer Vision' },
+] as const;
+
+// Career timeline — the progression story
+export const CAREER_TIMELINE = [
+  {
+    period: '2026 — Present',
+    company: 'Brown Bag Films',
+    role: 'Unreal Engine Pipeline TD',
+    focus: ['Film', 'Animation', 'Unreal Engine', 'Pipeline Engineering'],
+    current: true,
+  },
+  {
+    period: '2025 — 2026',
+    company: 'Zitro',
+    role: 'Technical Artist',
+    focus: ['Engine Tools', 'Godot', 'Shaders', 'Automation'],
+    current: false,
+  },
+  {
+    period: '2022 — 2024',
+    company: 'Technicolor Games',
+    role: 'Technical Artist',
+    focus: ['Procedural Tools', 'DCC Pipelines', 'Python', 'Houdini', 'Maya'],
+    current: false,
+  },
 ] as const;
 
 // Skills/technologies
 export const TECHNOLOGIES = [
   'C++',
   'Python',
+  'OpenGL',
+  'GLSL',
   'Unreal Engine',
   'Blender',
   'Houdini',
-  'OpenGL',
-  'HLSL',
-  'GLSL',
-  'Control Rig',
-  'PCG Graphs',
-  'Vulknan',
-  'Real-Time Rendering',
-  'Shader Development',
-  'Tool Development',
+  'Godot',
+  'PyQt6',
+  'SQLite',
+  'MediaPipe',
+  'OpenCV',
+  'CMake',
+  'ImGui',
+  'Shaders',
+  'Procedural Generation',
+  'Pipeline Development',
+  'Computer Vision',
 ] as const;

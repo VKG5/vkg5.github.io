@@ -7,12 +7,14 @@ const currentPath = Astro.url.pathname;
 <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
   <div class="container">
     <nav class="flex items-center justify-between h-20">
-      <!-- Logo -->
-      <a href="/" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-base">
+      <!-- Logo — brass marker -->
+      <a href="/" class="flex items-center gap-3 group" aria-label={`${SITE.name} — Home`}>
+        <span
+          class="w-9 h-9 bg-accent flex items-center justify-center font-mono font-semibold text-bg-primary text-sm rounded-[4px] transition-transform duration-300 group-hover:rotate-45"
+        >
           V
-        </div>
-        <span class="font-semibold text-text-primary group-hover:text-accent transition-colors hidden sm:block">
+        </span>
+        <span class="font-display font-semibold text-text-primary group-hover:text-accent transition-colors hidden sm:block">
           {SITE.name}
         </span>
       </a>
@@ -26,7 +28,7 @@ const currentPath = Astro.url.pathname;
             <li>
               <a
                 href={link.href}
-                class={`relative px-4 py-2 text-sm font-medium transition-colors rounded-lg
+                class={`relative px-4 py-2 text-sm font-medium transition-colors rounded-md
                   ${isActive 
                     ? 'text-text-primary' 
                     : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary'
@@ -34,7 +36,7 @@ const currentPath = Astro.url.pathname;
               >
                 {link.label}
                 {isActive && (
-                  <span class="absolute bottom-0 left-4 right-4 h-0.5 bg-accent rounded-full" />
+                  <span class="absolute bottom-0.5 left-4 right-4 h-px bg-accent" />
                 )}
               </a>
             </li>

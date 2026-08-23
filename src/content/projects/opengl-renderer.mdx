@@ -1,0 +1,50 @@
+---
+title: "OpenGL Renderer"
+description: "A C++ real-time rendering engine exploring physically based materials, multiple lighting models, shadows, environment mapping, path tracing, procedural generation, and interactive scene management."
+shortDescription: "A C++ real-time renderer exploring PBR, path tracing, procedural generation, and interactive rendering."
+publishedAt: 2024-06-01
+status: in-progress
+categories: [graphics, systems]
+tier: 1
+order: 1
+technologies: [C++, OpenGL, GLSL, ImGui, CMake]
+featured: true
+cover: /images/projects/opengl.png
+links:
+  github: https://github.com/VKG5/OpenGL
+---
+
+## Problem
+
+Most graphics knowledge stays theoretical until you build a renderer from scratch. Frameworks and engines hide the interesting parts — how light actually gets simulated, how materials are shaded, how a frame is assembled. I wanted to understand every stage of the pipeline by owning all of it.
+
+## Approach
+
+Build a real-time engine in modern C++ with OpenGL as the rendering backend, implementing each technique from first principles rather than copying tutorial code. Every feature — lighting models, shadow mapping, PBR materials, path tracing — is written to be understood, not just to work.
+
+## Architecture
+
+The engine is structured around a small set of core systems:
+
+- **Rendering core** — shader pipeline, framebuffer management, draw-loop architecture
+- **Material system** — multiple shading models, from Blinn-Phong through full PBR (metallic/roughness workflow)
+- **Lighting** — directional, point, and spot lights; shadow mapping; environment mapping for image-based lighting
+- **Path tracing** — progressive ray-traced ground truth rendered alongside the raster path
+- **Procedural generation** — geometry generated at runtime rather than loaded
+- **Tooling layer** — ImGui-driven controls for live parameter tweaking, plus CMake build tooling with clang-format and clang-tidy configured
+
+## Engineering Decisions
+
+- **C++ over higher-level bindings**: direct control over memory layout, GPU uploads, and the render loop.
+- **ImGui for tooling**: immediate-mode UI keeps experiment iteration fast without polluting the engine core.
+- **CMake + static analysis from day one**: clang-format and clang-tidy enforce consistency across the codebase — engineering hygiene treated as part of the project, not an afterthought.
+
+## Result
+
+A working real-time renderer that demonstrates the full journey from raw geometry to a shaded, lit, post-processed frame — with a path-traced reference mode for validating the raster output.
+
+## What I Learned
+
+- The render loop is a contract: every subsystem either respects it or breaks it.
+- PBR is less about the math and more about disciplined energy conservation everywhere.
+- Debugging graphics means learning to read colors as data.

@@ -17,10 +17,12 @@ const { Content } = await project.render();
 <ProjectPage
   title={project.data.title}
   description={project.data.description}
+  shortDescription={project.data.shortDescription}
   publishedAt={project.data.publishedAt}
   status={project.data.status}
-  category={project.data.category}
+  categories={project.data.categories}
   technologies={project.data.technologies}
+  order={project.data.order}
   cover={project.data.cover}
   links={project.data.links}
 >

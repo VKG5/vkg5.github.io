@@ -5,52 +5,84 @@ import { SOCIAL_LINKS } from '@/lib/constants';
 
 <BaseLayout
   title="Contact"
-  description="Get in touch for collaborations, questions, or just to say hello."
+  description="Get in touch about graphics systems, pipeline engineering, production tooling, or collaborations."
 >
   <section class="section">
     <div class="container">
       <div class="max-w-2xl mx-auto">
         <!-- Header -->
         <header class="text-center mb-12" data-animate>
-          <h1 class="heading-1 mb-4">Get in Touch</h1>
+          <span class="meta-label block mb-4">Contact</span>
+          <h1 class="heading-1 mb-4">Open a channel.</h1>
           <p class="lead">
-            Have a project in mind, a question about my work, or just want to say hello? 
-            I'd love to hear from you.
+            Have a graphics problem, a pipeline question, or a project in mind?
+            I'd love to hear about it.
           </p>
         </header>
         
-        <!-- Placeholder Illustration -->
+        <!-- Transmission channel artifact -->
         <div class="flex flex-col items-center justify-center py-16" data-animate>
-          <svg class="w-64 h-64 mb-8" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Envelope -->
-            <rect x="40" y="70" width="120" height="80" rx="4" stroke="currentColor" stroke-width="2" class="text-border"/>
-            <path d="M40 70L100 110L160 70" stroke="currentColor" stroke-width="2" class="text-accent"/>
-            <circle cx="100" cy="110" r="3" fill="currentColor" class="text-accent"/>
-            
-            <!-- Decorative lines -->
-            <line x1="60" y1="130" x2="90" y2="130" stroke="currentColor" stroke-width="1.5" class="text-border" opacity="0.5"/>
-            <line x1="60" y1="140" x2="140" y2="140" stroke="currentColor" stroke-width="1.5" class="text-border" opacity="0.5"/>
-          </svg>
-          
+          <div class="tech-frame bg-bg-secondary p-6 w-full max-w-sm select-none" aria-hidden="true">
+            <div class="flex items-center justify-between mb-5">
+              <span class="frame-tag"><strong>CHANNEL_01</strong></span>
+              <span class="field-chip">Open</span>
+            </div>
+
+            <dl class="space-y-2.5 text-xs font-mono">
+              <div class="flex justify-between gap-4">
+                <dt class="text-text-tertiary shrink-0">TO</dt>
+                <dd class="text-accent text-right tracking-widest" title="the keeper of this workshop">
+                  ᚹᚨᚱᚢᚾ · ᚷᚢᛈᛏᚨ
+                </dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-text-tertiary shrink-0">SIGIL</dt>
+                <dd class="text-text-primary text-right truncate select-all" title="base64 — decode it if you dare">
+                  dmFydW5AdmFydW5ndXB0YS5kZXY=
+                </dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-text-tertiary shrink-0">STATUS</dt>
+                <dd class="text-accent">seal unbroken · awaiting raven</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-text-tertiary shrink-0">LATENCY</dt>
+                <dd class="text-text-primary">≤ 24 hrs</dd>
+              </div>
+            </dl>
+
+            <p class="frame-tag mt-3 text-right">// the sigil decodes to a working address. ravens accepted.</p>
+
+            <!-- Signal bars -->
+            <div class="mt-5 flex items-end gap-1 h-6" aria-hidden="true">
+              <span class="w-2 bg-accent/80 rounded-sm" style="height: 30%"></span>
+              <span class="w-2 bg-accent/80 rounded-sm" style="height: 55%"></span>
+              <span class="w-2 bg-accent rounded-sm" style="height: 80%"></span>
+              <span class="w-2 bg-accent rounded-sm" style="height: 100%"></span>
+              <span class="w-2 bg-accent rounded-sm animate-pulse" style="height: 65%"></span>
+              <span class="ml-auto frame-tag self-end">SIGNAL STRONG</span>
+            </div>
+          </div>
+
           <a
             href={SOCIAL_LINKS.email}
-            class="btn btn-primary btn-lg"
+            class="btn btn-primary btn-lg mt-8"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-            Send me an Email
+            Send the Raven
           </a>
-          
+
           <p class="text-text-tertiary text-sm mt-6">
-            Opens in your default email client
+            The sigil above is base64 — decode it, or just let the raven fly.
           </p>
         </div>
         
         <!-- Social Links -->
         <div class="mt-12 text-center" data-animate>
-          <p class="text-text-tertiary mb-6">
-            Or connect on social media
+          <p class="frame-tag uppercase mb-6">
+            Or find me elsewhere
           </p>
           
           <div class="flex items-center justify-center gap-6">

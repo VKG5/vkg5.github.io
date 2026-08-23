@@ -34,9 +34,9 @@ const readingTime = getReadingTime(content);
   <article class="py-12 md:py-20">
     <!-- Header -->
     <header class="container-narrow mb-12">
-      <div class="flex items-center gap-3 text-sm text-text-tertiary mb-4">
-        <a href={`/blog/category/${category}`} class="link capitalize">
-          {category.replace('-', ' ')}
+      <div class="flex items-center gap-3 frame-tag mb-4">
+        <a href={`/blog?category=${category}`} class="link uppercase">
+          {category.replace(/-/g, ' ')}
         </a>
         <span>·</span>
         <time datetime={publishedAt.toISOString()}>
@@ -96,13 +96,13 @@ const readingTime = getReadingTime(content);
     <!-- Smooth ending -->
     <div class="container-narrow mt-20 mb-12">
       <div class="tech-frame p-8 md:p-12 bg-bg-secondary text-center">
-        <span class="meta-label block mb-3">Thanks for Reading</span>
+        <span class="meta-label block mb-3">End of Note</span>
         <h3 class="heading-4 mb-4">Found this useful?</h3>
         <p class="text-text-secondary mb-6 max-w-lg mx-auto">
-          If you enjoyed this article, share it with others or explore more writing on procedural systems, tools, and graphics.
+          More field notes on graphics, procedural systems, tools, and pipelines are filed in the archive.
         </p>
         <div class="flex flex-wrap items-center justify-center gap-4">
-          <a href="/blog" class="btn btn-primary">← Back to Blog</a>
+          <a href="/blog" class="btn btn-primary">← All Field Notes</a>
           <a href="/contact" class="btn btn-ghost">Get in Touch</a>
         </div>
       </div>

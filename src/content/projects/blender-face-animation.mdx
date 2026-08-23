@@ -1,0 +1,44 @@
+---
+title: "Blender Face Animation"
+description: "A local Blender facial motion-capture system that converts webcam or video performance into reusable character animation through landmark tracking and rig-independent controls."
+shortDescription: "A local facial mocap pipeline that turns webcam performance into reusable Blender character animation."
+publishedAt: 2025-01-15
+status: in-progress
+categories: [computer-vision, tools]
+tier: 3
+order: 4
+technologies: [Python, Blender, MediaPipe, OpenCV, Computer Vision]
+featured: false
+links:
+  github: https://github.com/VKG5/Blender-Face-Animation
+---
+
+## Problem
+
+How do you separate motion capture data from a specific character rig? Most facial mocap output is welded to one target — change the character and the data is useless. The capture should be portable; the rig mapping should be a detail, not a dependency.
+
+## Approach
+
+Insert an abstraction layer between tracking and animation: MediaPipe tracks the face, the tracker output is converted into a universal set of facial controls, and those controls — not raw landmarks — drive whatever rig is attached.
+
+## Architecture
+
+- **Tracking layer** — MediaPipe Face Landmarker processes webcam or video input, producing 478 3D landmarks per frame
+- **Control abstraction** — raw landmark streams are converted into universal facial controls (jaw open, brow raise, smile curvature, etc.)
+- **Mapping layer** — controls are bound to shape keys and/or armature bones through configurable mappings
+- **Rig independence** — the same captured performance can drive different characters by swapping the mapping, not re-recording
+
+## Engineering Decisions
+
+- **Universal controls as the interchange format**: landmarks describe a face; controls describe *expression*. Only the latter is reusable.
+- **Local processing**: everything runs on-device — no cloud round-trips, no privacy trade-offs.
+- **Shape keys and bones both supported**: rigs differ; the abstraction serves both instead of picking a winner.
+
+## Result
+
+A working local pipeline from webcam to animated character, where the same performance file retargets across characters with different rigs.
+
+## What I Learned
+
+- Abstraction layers earn their keep exactly at the point where requirements diverge.
+- Real-time vision pipelines live or die on frame-budget discipline.
