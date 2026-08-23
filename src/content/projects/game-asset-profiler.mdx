@@ -1,0 +1,45 @@
+---
+title: "Game Asset Profiler"
+description: "A diagnostic and optimization tool that scans game assets, calculates VRAM usage, identifies memory inefficiencies, and turns asset data into actionable optimization insights."
+shortDescription: "A desktop profiler that analyzes game assets, estimates VRAM usage, and surfaces actionable optimization problems."
+publishedAt: 2025-03-01
+status: completed
+categories: [systems, tools]
+tier: 1
+order: 2
+technologies: [Python, PyQt6, SQLite, Multithreading]
+featured: true
+links:
+  github: https://github.com/VKG5/Game-Asset-Profiler
+---
+
+## Problem
+
+How do you turn thousands of game assets into useful engineering information? Asset folders hide their own problems: unoptimized textures, non-power-of-two dimensions, duplicated sequences, silent VRAM bloat. By the time anyone notices, the budget is already blown.
+
+## Approach
+
+Build a dedicated profiler that scans asset directories, computes byte-level memory metrics per file, applies heuristics to flag common problems, and presents everything as severity-ranked insights — not raw data dumps.
+
+## Architecture
+
+- **Scanner core** — QThread-based multithreaded file-system walker that keeps the UI responsive while processing large trees
+- **Analysis layer** — byte-level VRAM estimation, DDS handling, power-of-two detection, texture sequence detection (frame.0001.png patterns)
+- **Insight engine** — heuristic rules produce severity-ranked findings: asset bloat, unoptimized textures, VRAM budget risks
+- **Persistence** — SQLite database so scans are comparable over time instead of one-off reports
+- **Interface** — PyQt6 desktop app with regex search, folder aggregation, and export functionality
+
+## Engineering Decisions
+
+- **Multithreading from the start**: a profiler that freezes on big folders is a profiler nobody runs.
+- **SQLite over flat files**: scan history turns the tool from a snapshot into a trend tracker.
+- **Severity-ranked insights over raw metrics**: the goal is decisions, not dashboards.
+
+## Result
+
+A working desktop tool that answers "where is my memory going?" in minutes — with per-file insights, historical comparison, and exportable reports.
+
+## What I Learned
+
+- File-system I/O dominates runtime; threading strategy matters more than algorithmic micro-optimization.
+- Heuristics need escape hatches: every rule needs a way to be wrong gracefully.

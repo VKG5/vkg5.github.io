@@ -1,52 +1,82 @@
 ---
-import Tag from '@/components/common/Tag.astro';
+import { PROJECT_CATEGORIES } from '@/lib/constants';
 
 interface Props {
   title: string;
   description: string;
-  cover: string;
+  categories?: string[];
   technologies: string[];
   href: string;
-  featured?: boolean;
+  status?: 'completed' | 'in-progress' | 'archived';
+  cover?: string;
+  order?: number;
 }
 
-const { title, description, cover, technologies, href, featured } = Astro.props;
+const { title, description, categories = [], technologies, href, status, cover, order } = Astro.props;
+
+const categoryLabels = categories
+  .map((slug) => PROJECT_CATEGORIES.find((c) => c.slug === slug)?.label ?? slug)
+  .join(' / ');
+
+const statusLabel =
+  status === 'completed' ? 'Explored' : status === 'in-progress' ? 'In Progress' : 'Archived';
 ---
 
 <article class="group h-full">
-  <a href={href} class="flex flex-col h-full card card-hover p-0 overflow-hidden min-h-[420px]">
-    <!-- Image -->
-    <div class="aspect-video overflow-hidden bg-bg-tertiary">
-      <img
-        src={cover}
-        alt={title}
-        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="lazy"
-      />
-    </div>
-    
-    <!-- Content -->
-    <div class="p-6">
-      {featured && (
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-xs font-medium text-accent bg-accent/10 px-2 py-0.5 rounded">
-            Featured
-          </span>
+  <a
+    href={href}
+    class="tech-frame card-lift flex flex-col h-full bg-bg-secondary p-0 overflow-hidden min-h-[380px]"
+  >
+    <!-- Visual: cover image or placeholder artifact -->
+    <div class="aspect-video overflow-hidden bg-bg-tertiary border-b border-border relative">
+      {cover ? (
+        <img
+          src={cover}
+          alt={title}
+          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          loading="lazy"
+        />
+      ) : (
+        <div class="w-full h-full flex items-center justify-center" aria-hidden="true">
+        <div class="text-center">
+            <div class="font-mono text-3xl text-text-tertiary group-hover:text-accent transition-colors mb-2">
+              {order ? String(order).padStart(2, '0') : '◈'}
+            </div>
+            <div class="frame-tag">ARTIFACT</div>
+          </div>
         </div>
       )}
-      
-      <h3 class="text-xl font-semibold text-text-primary mb-2 group-hover:text-accent transition-colors">
+      {status && (
+        <span class="field-chip absolute top-3 left-3 bg-bg-primary/80 backdrop-blur-sm">
+          {statusLabel}
+        </span>
+      )}
+    </div>
+
+    <!-- Recruiter-view content (§13) -->
+    <div class="p-6 flex flex-col flex-grow">
+      <div class="flex items-center justify-between mb-3">
+        <span class="frame-tag uppercase text-accent">{categoryLabels || 'Project'}</span>
+        {order && <span class="frame-tag">{String(order).padStart(2, '0')}</span>}
+      </div>
+
+      <h3 class="text-xl font-display font-semibold text-text-primary mb-2 group-hover:text-accent transition-colors">
         {title}
       </h3>
-      
-      <p class="text-text-secondary line-clamp-2 mb-4 flex-grow">
+
+      <p class="text-text-secondary text-sm leading-relaxed line-clamp-3 mb-5 flex-grow">
         {description}
       </p>
-      
-      <div class="flex flex-wrap gap-2 mt-auto">
-        {technologies.slice(0, 4).map((tech) => (
-          <Tag>{tech}</Tag>
-        ))}
+
+      <div class="flex items-center justify-between mt-auto">
+        <div class="flex flex-wrap gap-x-2 gap-y-1">
+          {technologies.slice(0, 3).map((tech) => (
+            <span class="text-xs font-mono text-text-tertiary">{tech}</span>
+          ))}
+        </div>
+        <span class="text-sm text-accent whitespace-nowrap group-hover:translate-x-1 transition-transform">
+          View →
+        </span>
       </div>
     </div>
   </a>

@@ -2,112 +2,191 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ProjectCard from '@/components/projects/ProjectCard.astro';
 import { getCollection } from 'astro:content';
-import { sortByDate } from '@/lib/utils';
 import { PROJECT_CATEGORIES } from '@/lib/constants';
 
-// Get all projects
+// All projects sorted by display order
 const allProjects = await getCollection('projects');
-const projects = sortByDate(allProjects);
+const projects = allProjects.sort((a, b) => {
+  const orderA = a.data.order ?? 999;
+  const orderB = b.data.order ?? 999;
+  return orderA - orderB;
+});
 
-// Get filter from query
-const currentFilter = Astro.url.searchParams.get('filter');
-const filteredProjects = currentFilter
-  ? projects.filter((p) => p.data.category === currentFilter)
-  : projects;
+// Tier grouping (§10)
+const tiers = [
+  {
+    tier: 1,
+    label: 'Graphics Engineering',
+    description: 'The strongest direct engineering signals — rendering, systems, performance.',
+  },
+  {
+    tier: 2,
+    label: 'Algorithms & Systems',
+    description: 'Procedural algorithms and data-driven generation.',
+  },
+  {
+    tier: 3,
+    label: 'Applied Technology',
+    description: 'Computer vision, animation systems, and production tooling.',
+  },
+];
 ---
 
 <BaseLayout
-  title="Projects"
-  description="Tools, experiments, and research projects in procedural generation, technical art, and game development."
+  title="Work"
+  description="Graphics systems, developer tools, and procedural pipelines. Each project documents the problem, the approach, and the engineering decisions behind it."
 >
   <section class="section">
     <div class="container">
       <!-- Header -->
-      <header class="mb-12" data-animate>
-        <h1 class="heading-1 mb-4">Projects</h1>
+      <header class="mb-10" data-animate>
+        <span class="meta-label block mb-4">Work</span>
+        <h1 class="heading-1 mb-4">Artifacts & Systems.</h1>
         <p class="lead max-w-2xl">
-          A collection of tools, experiments, and research projects. 
-          Each one taught me something new.
+          Interesting problems I tried to solve — each one documented as a field report:
+          problem, approach, architecture, and what was learned.
         </p>
       </header>
-      
-      <!-- Filter -->
-      <div class="mb-10 pb-6 border-b border-border" data-animate>
+
+      <!-- Multi-category filter (§12) -->
+      <div class="mb-12 pb-6 border-b border-border" data-animate>
         <div class="flex items-center gap-2 flex-wrap">
           <button
             data-filter="all"
-            class="filter-btn px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-accent text-white"
+            class="filter-btn px-4 py-2 text-sm font-medium rounded-md transition-colors bg-accent text-bg-primary"
           >
             All
           </button>
           {PROJECT_CATEGORIES.map((cat) => (
             <button
               data-filter={cat.slug}
-              class="filter-btn px-4 py-2 text-sm font-medium rounded-lg transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-secondary"
+              class="filter-btn px-4 py-2 text-sm font-medium rounded-md transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-secondary"
             >
               {cat.label}
             </button>
           ))}
         </div>
       </div>
-      
-      <!-- Projects Grid -->
-      {filteredProjects.length > 0 ? (
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project, index) => (
-            <div class="project-item" data-category={project.data.category} data-animate style={`animation-delay: ${index * 50}ms`}>
-              <ProjectCard
-                title={project.data.title}
-                description={project.data.description}
-                cover={project.data.cover}
-                technologies={project.data.technologies}
-                href={`/projects/${project.slug}`}
-                featured={project.data.featured}
-              />
+
+      <!-- Tiered sections -->
+      {tiers.map(({ tier, label, description }) => {
+        const tierProjects = projects.filter((p) => p.data.tier === tier);
+        if (tierProjects.length === 0) return null;
+        return (
+          <section class="mb-16 last:mb-0" data-tier-section>
+            <div class="flex items-baseline gap-4 mb-6" data-animate>
+              <span class="frame-tag">TIER {tier}</span>
+              <div>
+                <h2 class="heading-4">{label}</h2>
+                <p class="text-sm text-text-tertiary">{description}</p>
+              </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div class="card text-center py-16">
-          <div class="text-4xl mb-4">🚀</div>
-          <h3 class="heading-4 mb-2">No projects yet</h3>
-          <p class="text-text-tertiary">
-            Projects are coming soon. In the meantime, check out my blog!
-          </p>
-        </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tierProjects.map((project) => (
+                <div
+                  class="project-item"
+                  data-categories={(project.data.categories ?? []).join(' ')}
+                  data-animate
+                >
+                  <ProjectCard
+                    title={project.data.title}
+                    description={project.data.shortDescription ?? project.data.description}
+                    categories={project.data.categories}
+                    technologies={project.data.technologies}
+                    status={project.data.status}
+                    cover={project.data.cover}
+                    order={project.data.order}
+                    href={`/projects/${project.slug}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
+      <!-- Projects without a tier (fallback) -->
+      {projects.filter((p) => !p.data.tier).length > 0 && (
+        <section data-tier-section>
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects
+              .filter((p) => !p.data.tier)
+              .map((project) => (
+                <div
+                  class="project-item"
+                  data-categories={(project.data.categories ?? []).join(' ')}
+                  data-animate
+                >
+                  <ProjectCard
+                    title={project.data.title}
+                    description={project.data.shortDescription ?? project.data.description}
+                    categories={project.data.categories}
+                    technologies={project.data.technologies}
+                    status={project.data.status}
+                    cover={project.data.cover}
+                    order={project.data.order}
+                    href={`/projects/${project.slug}`}
+                  />
+                </div>
+              ))}
+          </div>
+        </section>
       )}
     </div>
   </section>
-  
+
   <script>
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const projectItems = document.querySelectorAll('.project-item');
-    
-    filterButtons.forEach(button => {
+    const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+    const tierSections = document.querySelectorAll<HTMLElement>('[data-tier-section]');
+    const projectItems = document.querySelectorAll<HTMLElement>('.project-item');
+
+    function applyFilter(filter: string | null) {
+      // Filter individual projects by multi-category membership
+      projectItems.forEach((item) => {
+        const categories = (item.getAttribute('data-categories') ?? '').split(/\s+/);
+        const show = filter === 'all' || categories.includes(filter ?? '');
+        item.style.display = show ? '' : 'none';
+      });
+
+      // Hide tier sections whose visible children are all filtered out
+      tierSections.forEach((section) => {
+        const items = Array.from(section.querySelectorAll<HTMLElement>('.project-item'));
+        const anyVisible = items.some((item) => item.style.display !== 'none');
+        section.style.display = anyVisible ? '' : 'none';
+      });
+    }
+
+    function setActiveButton(active: HTMLButtonElement | null) {
+      filterButtons.forEach((btn) => {
+        if (btn === active) {
+          btn.classList.add('bg-accent', 'text-bg-primary');
+          btn.classList.remove('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
+        } else {
+          btn.classList.remove('bg-accent', 'text-bg-primary');
+          btn.classList.add('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
+        }
+      });
+    }
+
+    filterButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const filter = button.getAttribute('data-filter');
-        
-        // Update button styles
-        filterButtons.forEach(btn => {
-          if (btn === button) {
-            btn.classList.add('bg-accent', 'text-white');
-            btn.classList.remove('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
-          } else {
-            btn.classList.remove('bg-accent', 'text-white');
-            btn.classList.add('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
-          }
-        });
-        
-        // Filter projects
-        projectItems.forEach(item => {
-          const category = item.getAttribute('data-category');
-          if (filter === 'all' || category === filter) {
-            (item as HTMLElement).style.display = 'block';
-          } else {
-            (item as HTMLElement).style.display = 'none';
-          }
-        });
+        setActiveButton(button);
+        applyFilter(filter);
       });
     });
+
+    // Support deep links like /projects?filter=graphics
+    const initialFilter = new URLSearchParams(window.location.search).get('filter');
+    if (initialFilter) {
+      const matchingButton = Array.from(filterButtons).find(
+        (btn) => btn.getAttribute('data-filter') === initialFilter
+      );
+      if (matchingButton) {
+        setActiveButton(matchingButton);
+        applyFilter(initialFilter);
+      }
+    }
   </script>
 </BaseLayout>

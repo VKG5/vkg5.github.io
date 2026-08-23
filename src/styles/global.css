@@ -3,35 +3,37 @@
 @tailwind utilities;
 
 @layer base {
-  /* Dark mode: warm obsidian + amber accent */
+  /* Dark mode: charcoal workshop + burnt copper accent (rustic field journal) */
   :root.dark {
-    --color-bg-primary: #0B0B0D;
-    --color-bg-secondary: #111114;
-    --color-bg-tertiary: #1A1A1E;
-    --color-text-primary: #F2F0E9;
-    --color-text-secondary: #A7A49A;
-    --color-text-tertiary: #6B675E;
-    --color-accent: #FF8C42;
-    --color-accent-hover: #FFA366;
-    --color-accent-subtle: #2A1A0F;
-    --color-border: #232326;
-    --color-border-hover: #343438;
+    --color-bg-primary: #080807;
+    --color-bg-secondary: #0B0A08;
+    --color-bg-tertiary: #14120E;
+    --color-text-primary: #EEE9DE;
+    --color-text-secondary: #969084;
+    --color-text-tertiary: #6E695E;
+    --color-accent: #C97C45;
+    --color-accent-hover: #DE9660;
+    --color-accent-subtle: #241A10;
+    --color-accent-2: #8A8A5C;
+    --color-border: #201D18;
+    --color-border-hover: #332F27;
     color-scheme: dark;
   }
 
-  /* Light mode: warm cream + amber accent */
+  /* Light mode: warm parchment + dark copper accent */
   :root:not(.dark) {
-    --color-bg-primary: #F5F0E6;
-    --color-bg-secondary: #FAF5EB;
-    --color-bg-tertiary: #EFE8DB;
-    --color-text-primary: #1A1712;
-    --color-text-secondary: #4F4A42;
-    --color-text-tertiary: #8B8376;
-    --color-accent: #A64B12;
-    --color-accent-hover: #7D360A;
-    --color-accent-subtle: #F5E6D3;
-    --color-border: #E0D6C6;
-    --color-border-hover: #C9BDA9;
+    --color-bg-primary: #F4F0E7;
+    --color-bg-secondary: #ECE7DB;
+    --color-bg-tertiary: #E2DCCB;
+    --color-text-primary: #171614;
+    --color-text-secondary: #4A463E;
+    --color-text-tertiary: #7A756A;
+    --color-accent: #A6521B;
+    --color-accent-hover: #7E3D12;
+    --color-accent-subtle: #EEE0CB;
+    --color-accent-2: #6B6B47;
+    --color-border: #DCD4C2;
+    --color-border-hover: #C6BCA6;
     color-scheme: light;
   }
 
@@ -218,14 +220,18 @@
     padding: 0.625rem 1.25rem;
     font-size: 0.875rem;
     font-weight: 500;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     transition: all 0.2s ease;
     font-family: 'Space Grotesk', Inter, system-ui, sans-serif;
   }
 
   .btn-primary {
     background-color: var(--color-accent);
-    color: var(--color-bg-primary);
+    color: #0B0A08;
+  }
+
+  :root:not(.dark) .btn-primary {
+    color: #F4F0E7;
   }
 
   .btn-primary:hover {
@@ -258,7 +264,7 @@
   .card {
     background-color: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     padding: 1.5rem;
     transition: all 0.3s ease;
   }
@@ -333,12 +339,12 @@
   }
 
   .glass {
-    background-color: rgba(11, 11, 13, 0.8);
+    background-color: rgba(8, 8, 7, 0.82);
     backdrop-filter: blur(12px);
   }
 
   :root:not(.dark) .glass {
-    background-color: rgba(250, 248, 242, 0.8);
+    background-color: rgba(244, 240, 231, 0.82);
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -403,43 +409,7 @@
     color: var(--color-text-tertiary);
   }
 
-  /* Click Spark Effect */
-  @keyframes spark-fly {
-    0% {
-      transform: translate(0, 0) scale(1);
-      opacity: 1;
-    }
-    100% {
-      transform: translate(var(--tx), var(--ty)) scale(0);
-      opacity: 0;
-    }
-  }
-
-  .click-spark {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  .spark-particle {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    animation: spark-fly 0.6s ease-out forwards;
-  }
-
-  :root:not(.dark) .spark-particle {
-    background: radial-gradient(circle, rgba(18, 18, 18, 0.9) 0%, rgba(18, 18, 18, 0.4) 100%);
-    box-shadow: 0 0 4px rgba(18, 18, 18, 0.6);
-  }
-
-  :root.dark .spark-particle {
-    background: radial-gradient(circle, rgba(255, 140, 66, 0.9) 0%, rgba(255, 140, 66, 0.4) 100%);
-    box-shadow: 0 0 4px rgba(255, 140, 66, 0.6);
-  }
-
-  /* Noise texture overlay */
+  /* Noise texture overlay — subtle paper grain */
   .noise-overlay {
     position: fixed;
     inset: 0;
@@ -450,38 +420,94 @@
     background-repeat: repeat;
   }
 
-  /* Custom cursor */
+  /* Custom cursor — small brass drafting point */
   .custom-cursor {
     position: fixed;
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
     border: 1px solid var(--color-accent);
-    border-radius: 50%;
+    border-radius: 1px;
+    background-color: var(--color-accent);
+    opacity: 0.85;
     pointer-events: none;
     z-index: 9998;
-    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
-    transform: translate(-50%, -50%);
-    mix-blend-mode: difference;
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out, background-color 0.15s ease-out;
+    transform: translate(-50%, -50%) rotate(45deg);
   }
 
   .custom-cursor.hovering {
-    transform: translate(-50%, -50%) scale(1.6);
-    background-color: var(--color-accent);
-    opacity: 0.2;
+    transform: translate(-50%, -50%) rotate(45deg) scale(1.5);
+    background-color: transparent;
+    opacity: 1;
   }
 
-  /* Hover glow */
+  /* Hover glow — restrained copper warmth */
   .hover-glow {
     transition: box-shadow 0.3s ease, transform 0.3s ease;
   }
 
   .hover-glow:hover {
-    box-shadow: 0 0 30px rgba(255, 140, 66, 0.15);
+    box-shadow: 0 0 24px rgba(201, 124, 69, 0.12);
     transform: translateY(-2px);
   }
 
   :root:not(.dark) .hover-glow:hover {
-    box-shadow: 0 0 30px rgba(166, 75, 18, 0.12);
+    box-shadow: 0 0 24px rgba(166, 82, 27, 0.1);
+  }
+
+  /* Card lift — physical "picked up" feel */
+  .card-lift {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-4px) rotate(-0.4deg);
+    box-shadow:
+      0 14px 28px -8px rgba(0, 0, 0, 0.35),
+      0 6px 12px -6px rgba(0, 0, 0, 0.25);
+    border-color: var(--color-border-hover);
+  }
+
+  :root:not(.dark) .card-lift:hover {
+    box-shadow:
+      0 14px 28px -8px rgba(23, 22, 20, 0.18),
+      0 6px 12px -6px rgba(23, 22, 20, 0.1);
+  }
+
+  /* Field-note chip — small status marker */
+  .field-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.1875rem 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+  }
+
+  .field-chip::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+  }
+
+  /* Film metadata tag — SEQ / SHOT / FRAME accents */
+  .frame-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--color-text-tertiary);
+  }
+
+  .frame-tag strong {
+    color: var(--color-accent);
+    font-weight: 500;
   }
 
   /* Scroll reveal base */
@@ -524,5 +550,28 @@
   .heading-hover:hover {
     transform: scale(1.02);
     color: var(--color-accent);
+  }
+
+  /* Reduced motion — disable decorative animation */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    .reveal,
+    .reveal-children > * {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    .card-lift:hover,
+    .hover-glow:hover {
+      transform: none;
+    }
+
+    .custom-cursor {
+      display: none;
+    }
   }
 }

@@ -9,18 +9,21 @@ const currentYear = new Date().getFullYear();
     <div class="flex flex-col md:flex-row items-center justify-between gap-6">
       <!-- Brand -->
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-sm">
+        <span
+          class="w-8 h-8 bg-accent flex items-center justify-center font-mono font-semibold text-bg-primary text-xs rounded-[3px]"
+        >
           V
-        </div>
+        </span>
         <div>
-          <p class="font-semibold text-text-primary">{SITE.name}</p>
-          <p class="text-xs text-text-tertiary">© {currentYear}</p>
+          <p class="font-display font-semibold text-text-primary">{SITE.name}</p>
+          <p class="text-xs text-text-tertiary">© {currentYear} · Graphics Engineer & Unreal Engine Pipeline TD</p>
         </div>
       </div>
-      
+
       <!-- Built with -->
-      <p class="text-sm text-text-tertiary">
+      <p class="frame-tag">
         Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="hover:text-text-primary transition-colors">Astro</a>
+        · Field notes from a film studio
       </p>
     </div>
   </div>

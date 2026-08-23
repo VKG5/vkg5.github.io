@@ -2,6 +2,7 @@
 import '@/styles/global.css';
 import Header from '@/components/layout/Header.astro';
 import Footer from '@/components/layout/Footer.astro';
+import AmbientParticles from '@/components/layout/AmbientParticles.astro';
 import { SITE } from '@/lib/constants';
 
 interface Props {
@@ -14,7 +15,7 @@ interface Props {
 const {
   title = SITE.title,
   description = SITE.description,
-  image = '/images/og/default.png',
+  image = '/images/portrait.jpg',
   article = false,
 } = Astro.props;
 
@@ -69,11 +70,12 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     
     <!-- Theme -->
-    <meta name="theme-color" content="#0B0B0D" />
+    <meta name="theme-color" content="#080807" />
   </head>
   
   <body class="min-h-screen flex flex-col antialiased">
     <div class="noise-overlay"></div>
+    <AmbientParticles />
     <div class="custom-cursor" id="custom-cursor"></div>
     <Header />
     
@@ -137,7 +139,7 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
         const isDark = document.documentElement.classList.contains('dark');
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', isDark ? '#0B0B0D' : '#F5F0E6');
+          metaThemeColor.setAttribute('content', isDark ? '#080807' : '#F4F0E7');
         }
       }
       
@@ -212,40 +214,5 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
       });
     </script>
     
-    <!-- Click Spark Effect -->
-    <script>
-      document.addEventListener('click', (e) => {
-        const sparkContainer = document.createElement('div');
-        sparkContainer.className = 'click-spark';
-        sparkContainer.style.left = e.clientX + 'px';
-        sparkContainer.style.top = e.clientY + 'px';
-        
-        const particleCount = 8;
-        const angleStep = (Math.PI * 2) / particleCount;
-        
-        for (let i = 0; i < particleCount; i++) {
-          const particle = document.createElement('div');
-          particle.className = 'spark-particle';
-          
-          const angle = angleStep * i;
-          const distance = 30 + Math.random() * 20;
-          const tx = Math.cos(angle) * distance;
-          const ty = Math.sin(angle) * distance;
-          
-          particle.style.setProperty('--tx', tx + 'px');
-          particle.style.setProperty('--ty', ty + 'px');
-          particle.style.left = '-2px';
-          particle.style.top = '-2px';
-          
-          sparkContainer.appendChild(particle);
-        }
-        
-        document.body.appendChild(sparkContainer);
-        
-        setTimeout(() => {
-          sparkContainer.remove();
-        }, 600);
-      });
-    </script>
   </body>
 </html>

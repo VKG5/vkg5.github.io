@@ -10,6 +10,9 @@
         "description": {
           "type": "string"
         },
+        "shortDescription": {
+          "type": "string"
+        },
         "publishedAt": {
           "anyOf": [
             {
@@ -34,14 +37,28 @@
             "archived"
           ]
         },
-        "category": {
-          "type": "string",
-          "enum": [
-            "tool",
-            "research",
-            "experiment",
-            "client"
-          ]
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "graphics",
+              "systems",
+              "procedural",
+              "tools",
+              "pipelines",
+              "computer-vision"
+            ]
+          },
+          "default": []
+        },
+        "tier": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "order": {
+          "type": "number"
         },
         "technologies": {
           "type": "array",
@@ -73,9 +90,6 @@
         },
         "cover": {
           "type": "string"
-        },
-        "$schema": {
-          "type": "string"
         }
       },
       "required": [
@@ -83,9 +97,7 @@
         "description",
         "publishedAt",
         "status",
-        "category",
-        "technologies",
-        "cover"
+        "technologies"
       ],
       "additionalProperties": false
     }

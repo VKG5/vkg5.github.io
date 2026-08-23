@@ -6,9 +6,17 @@ import { SOCIAL_LINKS, TECHNOLOGIES } from '@/lib/constants';
 
 const experience = [
   {
+    company: 'Brown Bag Films',
+    role: 'Unreal Engine Pipeline TD',
+    period: '2026 - Present',
+    current: true,
+    description:
+      'Working on production technology for film and animation using Unreal Engine — pipeline engineering, production systems, tooling, and automation that keep creative teams moving.',
+  },
+  {
     company: 'Zitro',
     role: 'Technical Artist',
-    period: '2025 - Present',
+    period: '2025 - 2026',
     description:
       'Developed tools, pipelines, and GPU-optimized shaders for a custom Godot 3.5.2 build. Built automation systems, asset processors, localization workflows, and editor tools that streamline content creation from Blender, Spine, and Photoshop into the engine.',
   },
@@ -115,21 +123,45 @@ const highlights = [
 
 <BaseLayout
   title="About"
-  description="Technical Artist and Game Developer specializing in procedural generation, tool development, and pipeline optimization."
+  description="Graphics Engineer and Unreal Engine Pipeline TD at Brown Bag Films. Building graphics systems, tools, and pipelines that solve real production problems."
 >
   <section class="section">
     <div class="container">
       <div class="max-w-3xl mx-auto">
-        <!-- Header -->
-        <header class="mb-12" data-animate>
-          <span class="meta-label block mb-4">Profile</span>
-          <h1 class="heading-1 mb-6">About</h1>
-          <p class="lead">
-            I'm Varun Kumar Gupta, aka Lumi, a Graphics Engineer and Technical Artist who enjoys building 
-            the systems and pipelines that make creative work easier and faster. Most of my time goes into 
-            procedural generation, real-time graphics, and writing tools that help artists get ideas on 
-            screen without fighting the software.
-          </p>
+        <!-- Header with field-record portrait -->
+        <header class="mb-12 grid md:grid-cols-[1fr_auto] gap-10 items-start" data-animate>
+          <div>
+            <span class="meta-label block mb-4">Profile</span>
+            <h1 class="heading-1 mb-6">About</h1>
+            <p class="lead">
+              I'm Varun Kumar Gupta — a Graphics Engineer and Unreal Engine Pipeline TD currently at
+              Brown Bag Films. I build the systems and pipelines that make creative work easier and
+              faster: rendering, procedural generation, and tools that help artists get ideas on
+              screen without fighting the software.
+            </p>
+            <div class="flex flex-wrap items-center gap-2 mt-5">
+              <span class="field-chip">Graphics Engineer</span>
+              <span class="field-chip">Unreal Engine Pipeline TD</span>
+              <span class="field-chip">Technical Artist</span>
+            </div>
+          </div>
+
+          <!-- Pinned field photograph -->
+          <figure
+            class="tech-frame bg-bg-secondary p-3 w-full max-w-[260px] justify-self-center rotate-2 hover:rotate-0 transition-transform duration-500"
+          >
+            <img
+              src="/images/portrait.jpg"
+              alt="Portrait of Varun Kumar Gupta"
+              class="w-full aspect-square object-cover rounded-sm"
+              style="filter: sepia(0.25) contrast(1.05) saturate(0.9);"
+              loading="eager"
+            />
+            <figcaption class="frame-tag mt-3 flex items-center justify-between">
+              <span>FIELD RECORD</span>
+              <span class="text-accent">V.K.G.</span>
+            </figcaption>
+          </figure>
         </header>
 
         <!-- Main content -->
@@ -248,7 +280,7 @@ const highlights = [
                 <div class="flex flex-col sm:flex-row sm:items-start gap-4">
                   <div class="sm:w-36 flex-shrink-0">
                     <span class="text-sm font-mono text-text-tertiary block">{job.period}</span>
-                    <span class="w-2 h-2 rounded-full bg-accent mt-2 inline-block"></span>
+                    {job.current && <span class="field-chip mt-2 inline-flex">Current</span>}
                   </div>
                   <div>
                     <h4 class="font-display font-semibold text-text-primary text-lg mb-1">{job.role}</h4>
@@ -303,7 +335,7 @@ const highlights = [
           <span class="meta-label block mb-3">Let's Connect</span>
           <h3 class="heading-4 mb-4">Want to build something together?</h3>
           <p class="text-text-secondary mb-6 max-w-xl mx-auto">
-            Have a project in mind or just want to chat about tech art, procedural systems, or graphics engineering?
+            Have a project in mind or just want to talk graphics systems, pipelines, or production technology?
           </p>
           <div class="flex flex-wrap items-center justify-center gap-4">
             <Button href="/contact" variant="primary">Get in Touch</Button>

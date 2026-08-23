@@ -1,127 +1,315 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Button from '@/components/common/Button.astro';
+import ProjectCard from '@/components/projects/ProjectCard.astro';
 import HeroScene from '@/components/three/HeroScene.astro';
 import { getCollection } from 'astro:content';
 import { sortByDate, filterDrafts } from '@/lib/utils';
+import { CAREER_TIMELINE } from '@/lib/constants';
 
-// Get latest posts
-const allPosts = await getCollection('blog');
-const posts = sortByDate(filterDrafts(allPosts)).slice(0, 3);
-
-// Get featured projects
+// All projects sorted by display order
 const allProjects = await getCollection('projects');
-const featuredProjects = allProjects.filter((p) => p.data.featured).slice(0, 3);
+const orderedProjects = allProjects.sort((a, b) => {
+  const orderA = a.data.order ?? 999;
+  const orderB = b.data.order ?? 999;
+  return orderA - orderB;
+});
 
-// Expertise areas
-const expertise = [
+const selectedWork = orderedProjects.slice(0, 3);
+const moreWork = orderedProjects.slice(3, 6);
+
+// Latest field notes
+const allPosts = await getCollection('blog');
+const posts = sortByDate(filterDrafts(allPosts)).slice(0, 2);
+
+// Domain sections (§34 / §35)
+const domains = [
   {
-    title: 'Procedural Generation',
-    description: 'Designing rule-driven systems that generate terrain, architecture, vegetation, and entire worlds at scale.',
-    icon: '01',
+    label: 'Graphics & Systems',
+    description:
+      'Experiments, tools, and systems exploring rendering, procedural generation, geometry, performance, and real-time graphics.',
+    slugs: ['opengl-renderer', 'l-systems', 'f1-track-generator', 'ai-landscape-generator'],
   },
   {
-    title: 'Tool Development',
-    description: 'Building Blender add-ons, Unreal plugins, and pipeline scripts that remove friction and multiply artist output.',
-    icon: '02',
-  },
-  {
-    title: 'Technical Art',
-    description: 'Bridging art and engineering through shaders, materials, rigs, and real-time rendering pipelines.',
-    icon: '03',
+    label: 'Production Technology',
+    description:
+      'Tools and pipelines built to solve practical problems in digital content production — from asset analysis to motion capture.',
+    slugs: ['game-asset-profiler', 'qol-blender', 'blender-face-animation'],
   },
 ];
 ---
 
 <BaseLayout>
-  <!-- Hero Section -->
-  <section class="relative min-h-[90vh] flex items-center overflow-hidden border-b border-border">
-    <HeroScene class="opacity-60" />
-    
-    <!-- Workshop grid overlay -->
-    <div class="absolute inset-0 grid-bg opacity-30 pointer-events-none"></div>
-    
-    <div class="container relative z-10">
-      <div class="max-w-3xl">
-        <div class="meta-label mb-6" data-animate>
-          VARUN KUMAR GUPTA — TECHNICAL ARTIST
+  <!-- Hero — typography is the hero (§23/§24/§25) -->
+  <section class="relative min-h-[88vh] flex items-center overflow-hidden border-b border-border">
+    <div class="absolute inset-0 grid-bg opacity-25 pointer-events-none"></div>
+
+    <!-- Interactive wireframe artifact — mouse-tracked, theme-aware -->
+    <HeroScene class="opacity-70" />
+
+    <div class="container relative z-10 py-20">
+      <div class="grid lg:grid-cols-[1fr_auto] gap-12 items-center">
+        <div class="max-w-3xl">
+          <div class="flex items-center gap-4 mb-6" data-animate>
+            <img
+              src="/images/portrait.jpg"
+              alt="Portrait of Varun Kumar Gupta"
+              class="w-12 h-12 rounded-full object-cover border border-accent/60"
+              style="filter: sepia(0.2) contrast(1.05) saturate(0.9);"
+              loading="eager"
+            />
+            <span class="meta-label">VARUN KUMAR GUPTA</span>
+          </div>
+
+          <h1 class="heading-1 mb-6" data-animate style="animation-delay: 80ms">
+            I build the tools<br />behind digital worlds.
+          </h1>
+
+          <p class="lead mb-8 max-w-xl" data-animate style="animation-delay: 160ms">
+            Graphics Engineer & Unreal Engine Pipeline TD. I build graphics systems,
+            tools, and pipelines for digital production.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-4 mb-10" data-animate style="animation-delay: 240ms">
+            <Button href="/projects" variant="primary">Explore Work</Button>
+            <Button href="/blog" variant="ghost">Read Field Notes</Button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 frame-tag" data-animate style="animation-delay: 320ms">
+            <span>FILM</span><span class="text-border">·</span>
+            <span>ANIMATION</span><span class="text-border">·</span>
+            <span>REAL-TIME</span><span class="text-border">·</span>
+            <span>GRAPHICS</span>
+          </div>
         </div>
-        
-        <h1 class="heading-1 mb-8" data-animate>
-          Building the invisible infrastructure behind creative worlds.
-        </h1>
-        
-        <p class="lead mb-10 max-w-2xl" data-animate>
-          I build procedural systems, artist-facing tools, and real-time pipelines that turn impossible creative workflows into production-ready reality.
-        </p>
-        
-        <div class="flex flex-wrap items-center gap-4 mb-12" data-animate>
-          <Button href="/blog" variant="primary">Read Blog</Button>
-          <Button href="/projects" variant="ghost">View Projects</Button>
-        </div>
-        
-        <div class="flex flex-wrap items-center gap-8 text-sm text-text-tertiary font-mono" data-animate>
-          <span>Rockstar Games</span>
-          <span class="text-border">/</span>
-          <span>EA @ Technicolor</span>
-          <span class="text-border">/</span>
-          <span>500+ Artist Tools Shipped</span>
+
+        <!-- Small technical artifact card (§25) -->
+        <div class="hidden lg:block" data-animate style="animation-delay: 400ms">
+          <div class="tech-frame bg-bg-secondary p-5 w-64 select-none" aria-hidden="true">
+            <div class="flex items-center justify-between mb-4">
+              <span class="frame-tag"><strong>SHOT_042</strong></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+            </div>
+            <dl class="space-y-2 text-xs font-mono">
+              <div class="flex justify-between">
+                <dt class="text-text-tertiary">FRAME</dt>
+                <dd id="hero-frame" class="text-text-primary">001284</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-text-tertiary">FPS</dt>
+                <dd class="text-text-primary">24</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-text-tertiary">ENGINE</dt>
+                <dd class="text-text-primary">UNREAL</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-text-tertiary">GPU</dt>
+                <dd class="text-accent">READY</dd>
+              </div>
+            </dl>
+            <div class="mt-4 h-1 bg-bg-tertiary rounded-full overflow-hidden">
+              <div id="hero-progress" class="h-full bg-accent rounded-full" style="width: 62%"></div>
+            </div>
+            <div class="mt-3 flex justify-between frame-tag">
+              <span>SEQ 07</span>
+              <span>RENDER QUEUE</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
-  
-  <!-- Expertise Section -->
-  <section class="section-sm bg-bg-secondary border-b border-border">
+
+  <!-- Current Role strip -->
+  <section class="border-b border-border bg-bg-secondary">
+    <div class="container py-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3" data-animate>
+        <div class="flex items-center gap-3">
+          <span class="field-chip">Currently</span>
+          <span class="text-text-primary font-medium">Brown Bag Films</span>
+          <span class="text-text-tertiary">—</span>
+          <span class="text-text-secondary">Unreal Engine Pipeline TD</span>
+        </div>
+        <span class="frame-tag">PRODUCTION TECHNOLOGY · FILM & ANIMATION</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Selected Work -->
+  <section class="section">
     <div class="container">
-      <div class="grid md:grid-cols-3 gap-px bg-border border border-border rounded-xl overflow-hidden">
-        {expertise.map((item, index) => (
-          <div class="bg-bg-secondary p-8 md:p-10 group hover:bg-bg-tertiary transition-colors" data-animate style={`animation-delay: ${index * 100}ms`}>
-            <div class="flex items-start justify-between mb-6">
-              <span class="text-xs font-mono text-text-tertiary">{item.icon}</span>
-              <span class="w-2 h-2 rounded-full bg-accent opacity-0 group-hover:opacity-100 transition-opacity"></span>
-            </div>
-            <h3 class="text-lg font-display font-semibold text-text-primary mb-3">{item.title}</h3>
-            <p class="text-text-secondary text-sm leading-relaxed">{item.description}</p>
+      <div class="flex items-end justify-between mb-10">
+        <div>
+          <span class="meta-label block mb-2">SEQ 01</span>
+          <h2 class="heading-3">Selected Work</h2>
+        </div>
+        <a href="/projects" class="link-underline text-text-secondary hover:text-text-primary text-sm whitespace-nowrap">
+          View all work →
+        </a>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {selectedWork.map((project) => (
+          <ProjectCard
+            title={project.data.title}
+            description={project.data.shortDescription ?? project.data.description}
+            categories={project.data.categories}
+            technologies={project.data.technologies}
+            status={project.data.status}
+            cover={project.data.cover}
+            order={project.data.order}
+            href={`/projects/${project.slug}`}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- More Work -->
+  {moreWork.length > 0 && (
+    <section class="section-sm border-y border-border bg-bg-secondary">
+      <div class="container">
+        <span class="meta-label block mb-6">More Work</span>
+        <div class="divide-y divide-border border-t border-b border-border">
+          {moreWork.map((project) => (
+            <a
+              href={`/projects/${project.slug}`}
+              class="group flex flex-col md:flex-row md:items-center justify-between gap-2 py-5 hover:bg-bg-tertiary transition-colors px-2"
+              data-animate
+            >
+              <div class="flex items-baseline gap-4">
+                <span class="frame-tag w-8">{String(project.data.order ?? '').padStart(2, '0')}</span>
+                <h3 class="text-lg font-display font-semibold text-text-primary group-hover:text-accent transition-colors">
+                  {project.data.title}
+                </h3>
+              </div>
+              <div class="flex items-center gap-4 pl-12 md:pl-0">
+                <span class="text-sm text-text-tertiary hidden md:inline">
+                  {(project.data.shortDescription ?? project.data.description).slice(0, 72)}…
+                </span>
+                <span class="text-text-tertiary group-hover:text-accent group-hover:translate-x-1 transition-all">→</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Engineering Approach — two domains -->
+  <section class="section">
+    <div class="container">
+      <div class="mb-10" data-animate>
+        <span class="meta-label block mb-2">Engineering Approach</span>
+        <h2 class="heading-3">Two problems, one discipline.</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-px bg-border border border-border rounded-lg overflow-hidden">
+        {domains.map((domain) => (
+          <div class="bg-bg-primary p-8 md:p-10" data-animate>
+            <h3 class="heading-4 mb-3">{domain.label}</h3>
+            <p class="text-text-secondary text-sm leading-relaxed mb-6">{domain.description}</p>
+            <ul class="space-y-2">
+              {domain.slugs.map((slug) => {
+                const project = orderedProjects.find((p) => p.slug === slug);
+                if (!project) return null;
+                return (
+                  <li>
+                    <a
+                      href={`/projects/${slug}`}
+                      class="group inline-flex items-center gap-2 text-sm text-text-secondary hover:text-accent transition-colors"
+                    >
+                      <span class="w-1 h-1 rounded-full bg-accent"></span>
+                      {project.data.title}
+                      <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         ))}
       </div>
     </div>
   </section>
-  
-  <!-- Latest Articles -->
+
+  <!-- Career -->
+  <section class="section-sm border-t border-border bg-bg-secondary">
+    <div class="container">
+      <div class="mb-10" data-animate>
+        <span class="meta-label block mb-2">Career</span>
+        <h2 class="heading-3">From artist tools to the systems beneath them.</h2>
+      </div>
+
+      <ol class="relative max-w-3xl">
+        {CAREER_TIMELINE.map((job, index) => (
+          <li class="relative pl-8 pb-10 last:pb-0" data-animate style={`animation-delay: ${index * 100}ms`}>
+            {/* Timeline marker */}
+            <span
+              class={`absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full border-2 ${
+                job.current ? 'bg-accent border-accent' : 'bg-bg-secondary border-border-hover'
+              }`}
+            >
+            </span>
+            {index < CAREER_TIMELINE.length - 1 && (
+              <span class="absolute left-[4px] top-5 bottom-0 w-px bg-border"></span>
+            )}
+
+            <div class="frame-tag mb-1">{job.period}</div>
+            <h3 class="text-lg font-display font-semibold text-text-primary">
+              {job.company}
+              {job.current && <span class="field-chip ml-3 align-middle">Current</span>}
+            </h3>
+            <p class="text-text-secondary text-sm mb-2">{job.role}</p>
+            <div class="flex flex-wrap gap-x-3 gap-y-1">
+              {job.focus.map((item) => (
+                <span class="text-xs text-text-tertiary font-mono">{item}</span>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- Field Notes preview -->
   <section class="section">
     <div class="container">
-      <div class="flex items-center justify-between mb-10">
+      <div class="flex items-end justify-between mb-10">
         <div>
-          <span class="meta-label block mb-2">Latest Writing</span>
-          <h2 class="heading-3">Articles</h2>
+          <span class="meta-label block mb-2">Field Notes</span>
+          <h2 class="heading-3">Notes from the workshop.</h2>
         </div>
-        <a href="/blog" class="link-underline text-text-secondary hover:text-text-primary text-sm">
-          View All →
+        <a href="/blog" class="link-underline text-text-secondary hover:text-text-primary text-sm whitespace-nowrap">
+          All field notes →
         </a>
       </div>
-      
+
       {posts.length > 0 ? (
         <div class="grid gap-4">
           {posts.map((post, index) => {
             const date = new Date(post.data.publishedAt);
             const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             return (
-              <a href={`/blog/${post.slug}`} class="tech-frame group block p-6 bg-bg-secondary hover:bg-bg-tertiary transition-colors" data-animate style={`animation-delay: ${index * 100}ms`}>
+              <a
+                href={`/blog/${post.slug}`}
+                class="tech-frame group block p-6 bg-bg-secondary hover:bg-bg-tertiary transition-colors"
+                data-animate
+                style={`animation-delay: ${index * 100}ms`}
+              >
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2 text-xs font-mono text-text-tertiary">
-                      <span class="text-accent">{post.data.category.replace(/-/g, ' ')}</span>
+                    <div class="flex items-center gap-3 mb-2 frame-tag">
+                      <span class="text-accent uppercase">{post.data.category.replace(/-/g, ' ')}</span>
                       <span>/</span>
                       <span>{formattedDate}</span>
-                      {post.data.featured && (
-                        <span class="px-2 py-0.5 rounded bg-accent/10 text-accent">FEATURED</span>
-                      )}
                     </div>
-                    <h3 class="text-xl font-display font-semibold text-text-primary group-hover:text-accent transition-colors">{post.data.title}</h3>
+                    <h3 class="text-xl font-display font-semibold text-text-primary group-hover:text-accent transition-colors">
+                      {post.data.title}
+                    </h3>
                   </div>
-                  <span class="text-text-tertiary group-hover:text-accent transition-colors">→</span>
+                  <span class="text-text-tertiary group-hover:text-accent group-hover:translate-x-1 transition-all">→</span>
                 </div>
               </a>
             );
@@ -129,94 +317,48 @@ const expertise = [
         </div>
       ) : (
         <div class="tech-frame p-12 text-center bg-bg-secondary">
-          <p class="text-text-tertiary mb-4">No articles yet. Check back soon!</p>
-          <p class="text-sm text-text-tertiary">
-            In the meantime, explore my <a href="/projects" class="link">projects</a>.
-          </p>
+          <p class="text-text-tertiary">Field notes coming soon.</p>
         </div>
       )}
     </div>
   </section>
-  
-  <!-- Featured Projects -->
-  <section class="section bg-bg-secondary border-y border-border">
-    <div class="container">
-      <div class="flex items-center justify-between mb-10">
-        <div>
-          <span class="meta-label block mb-2">Selected Work</span>
-          <h2 class="heading-3">Projects</h2>
-        </div>
-        <a href="/projects" class="link-underline text-text-secondary hover:text-text-primary text-sm">
-          All Projects →
-        </a>
-      </div>
-      
-      {featuredProjects.length > 0 ? (
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredProjects.map((project, index) => {
-            const date = new Date(project.data.publishedAt);
-            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-            return (
-               <a href={`/projects/${project.slug}`} class="tech-frame group block bg-bg-primary hover:bg-bg-tertiary transition-colors overflow-hidden hover-glow" data-animate style={`animation-delay: ${index * 100}ms`}>
-                <div class="aspect-video bg-bg-tertiary border-b border-border flex items-center justify-center overflow-hidden">
-                  {project.data.cover ? (
-                    <img src={project.data.cover} alt={project.data.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                  ) : (
-                    <span class="text-4xl font-mono text-text-tertiary group-hover:text-accent transition-colors">◈</span>
-                  )}
-                </div>
-                <div class="p-6">
-                  <div class="flex items-center justify-between mb-3 text-xs font-mono text-text-tertiary">
-                    <span class="text-accent">{project.data.category?.replace(/-/g, ' ') || 'Project'}</span>
-                    <span>{formattedDate}</span>
-                  </div>
-                  <h3 class="text-lg font-display font-semibold text-text-primary group-hover:text-accent transition-colors mb-4">{project.data.title}</h3>
-                  <div class="flex flex-wrap gap-2">
-                    {project.data.technologies.slice(0, 3).map((tech) => (
-                      <span class="tag">{tech}</span>
-                    ))}
-                  </div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      ) : (
-        <div class="tech-frame p-12 text-center bg-bg-primary">
-          <p class="text-text-tertiary">Projects coming soon!</p>
-        </div>
-      )}
-    </div>
-  </section>
-  
-  <!-- About Preview -->
-  <section class="section">
-    <div class="container">
-      <div class="max-w-4xl mx-auto">
-        <div class="tech-frame p-8 md:p-12 bg-bg-secondary" data-animate>
-          <div class="flex flex-col md:flex-row items-start gap-8">
-            <div class="w-24 h-24 tech-frame flex-shrink-0 flex items-center justify-center bg-bg-tertiary">
-              <span class="text-3xl text-accent">◉</span>
-            </div>
-            
-            <div>
-              <span class="meta-label block mb-2">About</span>
-              <h2 class="heading-4 mb-4">Hi, I'm Varun.</h2>
-              <p class="text-text-secondary mb-4">
-                I'm a Graphics Engineer and Technical Artist working on procedural generation, 
-                real-time systems, and the pipelines that keep creative teams moving fast.
-                I build the behind-the-scenes tech that turns ideas into scalable workflows 
-                and empowers creative teams.
-              </p>
-              <p class="text-text-secondary mb-6">
-                I'm deep into tool development, procedural systems, and experimenting 
-                with new ways to generate landscapes, assets, and entire worlds through code.
-              </p>
-              <Button href="/about" variant="ghost">More About Me →</Button>
-            </div>
-          </div>
-        </div>
+
+  <!-- Contact CTA -->
+  <section class="section-sm border-t border-border bg-bg-secondary">
+    <div class="container text-center" data-animate>
+      <span class="meta-label block mb-3">Contact</span>
+      <h2 class="heading-3 mb-4">Building something that needs engineering?</h2>
+      <p class="text-text-secondary mb-8 max-w-xl mx-auto">
+        I'm always interested in graphics systems, pipeline problems, and production tooling.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <Button href="/contact" variant="primary">Get in Touch</Button>
+        <Button href="/about" variant="ghost">About Me</Button>
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  // Subtle artifact-card life: frame counter + progress drift.
+  // Respects prefers-reduced-motion; purely decorative.
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const frameEl = document.getElementById('hero-frame');
+  const progressEl = document.getElementById('hero-progress');
+
+  if (!reducedMotion && frameEl && progressEl) {
+    let frame = 1284;
+    let progress = 62;
+    let direction = 1;
+
+    setInterval(() => {
+      frame += 1;
+      frameEl.textContent = String(frame).padStart(6, '0');
+
+      progress += direction * 0.15;
+      if (progress >= 78) direction = -1;
+      if (progress <= 55) direction = 1;
+      progressEl.style.width = `${progress}%`;
+    }, 120);
+  }
+</script>

@@ -17,17 +17,18 @@ const filteredPosts = currentCategory
 ---
 
 <BaseLayout
-  title="Blog"
-  description="Technical articles about procedural generation, technical art, tool development, and game development."
+  title="Field Notes"
+  description="Technical field notes on graphics, rendering, Unreal Engine, procedural generation, tools, and pipelines."
 >
   <section class="section">
     <div class="container">
       <!-- Header -->
       <header class="mb-12" data-animate>
-        <h1 class="heading-1 mb-4">Blog</h1>
+        <span class="meta-label block mb-4">Field Notes</span>
+        <h1 class="heading-1 mb-4">Notes from the workshop.</h1>
         <p class="lead max-w-2xl">
-          Technical deep-dives, tutorials, and thoughts on procedural generation, 
-          technical art, and tool development.
+          Technical deep-dives and working notes on graphics, rendering,
+          procedural systems, tools, and production pipelines.
         </p>
       </header>
       
@@ -36,7 +37,7 @@ const filteredPosts = currentCategory
         <div class="flex items-center gap-2 min-w-max">
           <button
             data-filter="all"
-            class="filter-btn px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-accent text-white"
+            class="filter-btn px-4 py-2 text-sm font-medium rounded-md transition-colors bg-accent text-bg-primary"
           >
             All
           </button>
@@ -70,12 +71,11 @@ const filteredPosts = currentCategory
         </div>
       ) : (
         <div class="card text-center py-16">
-          <div class="text-4xl mb-4">📝</div>
-          <h3 class="heading-4 mb-2">No articles yet</h3>
+          <h3 class="heading-4 mb-2">No notes here yet</h3>
           <p class="text-text-tertiary">
             {currentCategory 
-              ? `No articles in this category yet. Check back soon!`
-              : `Articles are coming soon. Stay tuned!`
+              ? `Nothing filed under this category yet. Check back soon.`
+              : `Field notes are being written. Stay tuned!`
             }
           </p>
         </div>
@@ -94,10 +94,10 @@ const filteredPosts = currentCategory
         // Update button styles
         filterButtons.forEach(btn => {
           if (btn === button) {
-            btn.classList.add('bg-accent', 'text-white');
+            btn.classList.add('bg-accent', 'text-bg-primary');
             btn.classList.remove('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
           } else {
-            btn.classList.remove('bg-accent', 'text-white');
+            btn.classList.remove('bg-accent', 'text-bg-primary');
             btn.classList.add('text-text-secondary', 'hover:text-text-primary', 'hover:bg-bg-secondary');
           }
         });

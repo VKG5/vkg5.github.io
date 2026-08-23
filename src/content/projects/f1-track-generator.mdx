@@ -1,0 +1,46 @@
+---
+title: "F1 Track Generator"
+description: "A Blender add-on that procedurally generates F1 circuits from track data, with modular assets, configurable geometry, procedural materials, and automated scene population."
+shortDescription: "A procedural Blender tool that turns track data into configurable, modular F1 circuit scenes."
+publishedAt: 2024-11-01
+status: completed
+categories: [procedural, tools]
+tier: 2
+order: 3
+technologies: [Python, Blender API, Procedural Generation, Procedural Materials]
+featured: true
+cover: /images/projects/f1.png
+links:
+  github: https://github.com/VKG5/F1-Track-Gen
+---
+
+## Problem
+
+Turning structured track data into a complete, populated circuit scene by hand is days of repetitive modelling. The interesting question isn't the track — it's how to make a system that rebuilds the entire environment whenever the inputs change.
+
+## Approach
+
+Treat the circuit as a data-driven generation problem: external track data drives geometry, modular asset collections populate the environment, and every stage stays configurable through the add-on UI.
+
+## Architecture
+
+- **Data layer** — reads external track sources and exposes configurable sectors, offsets, and track types
+- **Geometry generator** — builds drivable track geometry from the data, with configurable width, elevation, and curbs
+- **Modular asset system** — track pieces and filler objects live in swappable Blender collections; replacing the collection replaces the output without touching generation logic
+- **Scene population** — automated distribution of poles, flags, and props along the generated circuit
+- **Materials** — procedural shader setups so surfaces adapt without hand-painted textures
+
+## Engineering Decisions
+
+- **Assets separated from logic**: generation code never hard-references specific meshes — collections are the contract.
+- **Data-driven over baked**: changing an input re-runs the pipeline; nothing is manually patched after generation.
+- **Parameterized everything**: sectors, offsets, pole/flag distribution are user-facing options, not constants in code.
+
+## Result
+
+A complete F1 circuit — geometry, props, materials — generated from data in minutes, with every part replaceable through Blender's asset system.
+
+## What I Learned
+
+- Modular design is mostly about defining what *not* to couple.
+- Good tool UX is parameter design: the right defaults matter more than more options.

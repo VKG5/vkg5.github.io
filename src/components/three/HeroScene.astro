@@ -17,13 +17,15 @@ const { class: className = '' } = Astro.props;
     const canvas = document.getElementById('hero-canvas') as HTMLCanvasElement | null;
     if (!container || !canvas) return;
 
-    // Theme-aware colors
+    // Respect reduced motion — render a single static frame instead of animating
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Theme-aware colors (rustic copper palette)
     const isDark = () => document.documentElement.classList.contains('dark');
     const getColors = () => ({
-      wireframe: isDark() ? 0xff8c42 : 0x7a2e05,
-      core: isDark() ? 0xff8c42 : 0xa64b12,
-      particle: isDark() ? 0xff8c42 : 0x4a1a04,
-      glow: isDark() ? 0xff8c42 : 0xffa366,
+      wireframe: isDark() ? 0xc97c45 : 0x7e3d12,
+      core: isDark() ? 0xc97c45 : 0xa6521b,
+      particle: isDark() ? 0xc97c45 : 0x6b6b47,
     });
 
     let colors = getColors();
@@ -53,7 +55,7 @@ const { class: className = '' } = Astro.props;
     const material = new THREE.LineBasicMaterial({
       color: colors.wireframe,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.8,
     });
     const wireframe = new THREE.LineSegments(edges, material);
     scene.add(wireframe);
@@ -63,7 +65,7 @@ const { class: className = '' } = Astro.props;
     const coreMaterial = new THREE.MeshBasicMaterial({
       color: colors.core,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.18,
       wireframe: true,
     });
     const core = new THREE.Mesh(coreGeometry, coreMaterial);
@@ -85,7 +87,7 @@ const { class: className = '' } = Astro.props;
       color: colors.particle,
       size: 0.035,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.75,
     });
     const particles = new THREE.Points(particlesGeometry, particlesMaterial);
     scene.add(particles);
@@ -116,7 +118,7 @@ const { class: className = '' } = Astro.props;
 
     // Animation loop
     let animationId: number;
-    let startTime = performance.now();
+    const startTime = performance.now();
 
     function animate() {
       animationId = requestAnimationFrame(animate);
@@ -138,7 +140,12 @@ const { class: className = '' } = Astro.props;
       renderer.render(scene, camera);
     }
 
-    animate();
+    if (reducedMotion) {
+      // Static frame for reduced motion
+      renderer.render(scene, camera);
+    } else {
+      animate();
+    }
 
     // Resize handler
     function handleResize() {

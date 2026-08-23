@@ -34,9 +34,18 @@ const projects = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    // Short recruiter-view one-liner (falls back to description)
+    shortDescription: z.string().optional(),
     publishedAt: z.coerce.date(),
     status: z.enum(['completed', 'in-progress', 'archived']),
-    category: z.enum(['tool', 'research', 'experiment', 'client']),
+    // Multi-category support: graphics / systems / procedural / tools / pipelines / computer-vision
+    categories: z
+      .array(z.enum(['graphics', 'systems', 'procedural', 'tools', 'pipelines', 'computer-vision']))
+      .default([]),
+    // Display hierarchy: 1 = Graphics Engineering, 2 = Algorithms & Systems, 3 = Applied Technology
+    tier: z.number().min(1).max(3).optional(),
+    // Display order on the homepage / work index
+    order: z.number().optional(),
     technologies: z.array(z.string()),
     featured: z.boolean().default(false),
     links: z
@@ -46,7 +55,7 @@ const projects = defineCollection({
         download: z.string().url().optional(),
       })
       .optional(),
-    cover: z.string(),
+    cover: z.string().optional(),
   }),
 });
 
