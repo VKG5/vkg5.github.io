@@ -1,8 +1,10 @@
 ---
 import '@/styles/global.css';
+import 'katex/dist/katex.min.css';
 import Header from '@/components/layout/Header.astro';
 import Footer from '@/components/layout/Footer.astro';
 import AmbientParticles from '@/components/layout/AmbientParticles.astro';
+import MermaidRenderer from '@/components/common/MermaidRenderer.astro';
 import { SITE } from '@/lib/constants';
 
 interface Props {
@@ -76,6 +78,7 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.name}`;
   <body class="min-h-screen flex flex-col antialiased">
     <div class="noise-overlay"></div>
     <AmbientParticles />
+    <MermaidRenderer />
     <div class="custom-cursor" id="custom-cursor"></div>
     <Header />
     

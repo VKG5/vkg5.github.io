@@ -325,6 +325,96 @@
     background-color: var(--color-bg-tertiary);
     border: 1px solid var(--color-border);
   }
+
+  /* KaTeX display math — match code colour, scroll instead of overflowing */
+  .prose-custom .katex-display {
+    margin: 1.5rem 0;
+    padding: 0.25rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    color: var(--color-text-primary);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .prose-custom .katex-display > .katex {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  /* --- Mermaid diagrams -------------------------------------------------
+     Emitted by src/plugins/rehype-mermaid.mjs, hydrated by
+     src/components/common/MermaidRenderer.astro. Colours come from the theme
+     variables only, so light/dark stays consistent with the rest of the site. */
+
+  .mermaid-wrapper {
+    margin: 2rem 0;
+    text-align: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Placeholder until the client renderer swaps the source for an SVG — avoids
+     a flash of raw diagram text while the lazy chunks load. */
+  .mermaid-wrapper:not([data-rendered])::before {
+    content: 'Rendering diagram…';
+    display: block;
+    padding: 2rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+  }
+
+  .mermaid-wrapper:not([data-rendered]) > pre.mermaid {
+    display: none;
+  }
+
+  /* The source is not a code block: override both the prose `pre` rule above
+     and Tailwind Typography's own `pre` styling. */
+  .mermaid-wrapper > pre.mermaid,
+  .prose-custom .mermaid-wrapper > pre.mermaid {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    text-align: left;
+    white-space: pre;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+
+  /* A diagram that fails to parse falls back to its source, visibly flagged */
+  .mermaid-wrapper[data-rendered='error'] > pre.mermaid,
+  .prose-custom .mermaid-wrapper[data-rendered='error'] > pre.mermaid {
+    display: block;
+    padding: 1rem;
+    border: 1px dashed var(--color-accent);
+    background-color: var(--color-bg-tertiary);
+  }
+
+  .mermaid-wrapper[data-rendered='error']::after {
+    content: 'Diagram failed to render — source shown above.';
+    display: block;
+    margin-top: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .mermaid-wrapper svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    background-color: transparent;
+  }
 }
 
 @layer utilities {
