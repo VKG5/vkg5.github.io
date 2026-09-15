@@ -1,0 +1,64 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/blog/PostCard.astro';
+import { getCollection } from 'astro:content';
+import { sortByDate, filterDrafts } from '@/lib/utils';
+import { BLOG_SECTIONS } from '@/lib/constants';
+
+const sectionSlug = 'godot-atmosphere';
+const sectionInfo = BLOG_SECTIONS.find(s => s.slug === sectionSlug);
+
+const allPosts = await getCollection('blog');
+const posts = sortByDate(filterDrafts(allPosts)).filter(p => p.data.section === sectionSlug);
+---
+
+<BaseLayout 
+  title={sectionInfo?.label || 'Section'} 
+  description={sectionInfo?.description || 'Field Notes section'}
+>
+  <section class="section">
+    <div class="container">
+      <!-- Header -->
+      <header class="mb-12" data-animate>
+        <div class="flex items-center gap-3 mb-4">
+          <span class="frame-tag uppercase">Section</span>
+          <span class="text-border">/</span>
+          <span class="frame-tag uppercase text-accent">{sectionInfo?.label}</span>
+        </div>
+        <h1 class="heading-1 mb-4">{sectionInfo?.label}</h1>
+        <p class="lead max-w-2xl">
+          {sectionInfo?.description}
+        </p>
+        <a href="/blog" class="inline-block mt-6 text-sm text-text-secondary hover:text-text-primary transition-colors">
+          ← Back to all field notes
+        </a>
+      </header>
+
+      <!-- Posts Grid -->
+      {posts.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.map((post, index) => (
+            <div data-animate style={`animation-delay: ${index * 50}ms`} class="post-item">
+              <PostCard
+                title={post.data.title}
+                description={post.data.description}
+                publishedAt={post.data.publishedAt}
+                category={post.data.category}
+                tags={post.data.tags}
+                href={`/blog/${post.slug}`}
+                featured={post.data.featured}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="card text-center py-16">
+          <h3 class="heading-4 mb-2">No notes here yet</h3>
+          <p class="text-text-tertiary">
+            This section is currently under development. Check back soon!
+          </p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

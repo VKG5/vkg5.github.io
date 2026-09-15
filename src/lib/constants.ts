@@ -1,9 +1,9 @@
 // Site metadata
 export const SITE = {
   name: 'Varun Kumar Gupta',
-  title: 'Varun Kumar Gupta — Graphics Engineer & Unreal Engine Pipeline TD',
+  title: 'Varun Kumar Gupta — Graphics Engineer & Technical Artist',
   description:
-    'Graphics Engineer and Unreal Engine Pipeline TD at Brown Bag Films. I build graphics systems, tools, and pipelines that solve real production problems.',
+    'Graphics Engineer and Technical Artist. I build graphics systems, tools, and pipelines that solve real production problems in games and film.',
   url: 'https://varungupta.dev',
   author: 'Varun Kumar Gupta',
   email: 'hello@varungupta.dev',
@@ -49,6 +49,16 @@ export const ARTICLE_SERIES = [
   { slug: 'pipeline-patterns', label: 'Pipeline Patterns', description: 'Production-tested workflow architectures' },
 ] as const;
 
+// Featured blog sections (mini-hubs on the Field Notes page)
+export const BLOG_SECTIONS = [
+  {
+    slug: 'godot-atmosphere',
+    label: 'Godot Atmosphere',
+    description: 'Rendering atmospherics in Godot — clouds, fog, skies, and volumetrics.',
+  },
+] as const;
+
+
 // Project categories — multi-category filtering (a project can belong to several)
 export const PROJECT_CATEGORIES = [
   { slug: 'graphics', label: 'Graphics' },
@@ -63,9 +73,9 @@ export const PROJECT_CATEGORIES = [
 export const CAREER_TIMELINE = [
   {
     period: '2026 — Present',
-    company: 'Brown Bag Films',
-    role: 'Unreal Engine Pipeline TD',
-    focus: ['Film', 'Animation', 'Unreal Engine', 'Pipeline Engineering'],
+    company: 'Independent',
+    role: 'Technical + Musical R&D',
+    focus: ['Graphics', 'Vulkan', 'Godot', 'Procedural Generation', 'Music Production'],
     current: true,
   },
   {

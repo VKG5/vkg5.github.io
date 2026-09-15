@@ -70,6 +70,9 @@
         "seriesOrder": {
           "type": "number"
         },
+        "section": {
+          "type": "string"
+        },
         "featured": {
           "type": "boolean",
           "default": false
@@ -79,6 +82,9 @@
           "default": false
         },
         "cover": {
+          "type": "string"
+        },
+        "$schema": {
           "type": "string"
         }
       },
