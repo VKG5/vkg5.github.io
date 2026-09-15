@@ -141,6 +141,46 @@
     @apply mx-auto px-8 md:px-12 max-w-3xl;
   }
 
+  /* Article reading column — wide, comfortable, centered (Phase 3) */
+  .reading-column {
+    @apply mx-auto px-6 md:px-8;
+    max-width: 860px; /* 820px content + horizontal padding */
+  }
+
+  /* Cover images and figures may extend slightly past the prose column */
+  .reading-column-wide {
+    @apply mx-auto px-6 md:px-8;
+    max-width: 960px;
+  }
+
+  /* Reading rhythm: 17-18px body, generous line-height and spacing */
+  .prose-custom {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  @media (min-width: 768px) {
+    .prose-custom {
+      font-size: 1.125rem;
+    }
+  }
+
+  .prose-custom p {
+    margin-top: 1.35em;
+    margin-bottom: 1.35em;
+  }
+
+  .prose-custom h2,
+  .prose-custom h3 {
+    margin-top: 2.2em;
+    margin-bottom: 0.9em;
+    scroll-margin-top: 100px;
+  }
+
+  .prose-custom [id] {
+    scroll-margin-top: 100px;
+  }
+
   .container-wide {
     @apply mx-auto px-8 md:px-12 max-w-8xl;
   }
@@ -414,6 +454,127 @@
     height: auto;
     margin: 0 auto;
     background-color: transparent;
+  }
+
+  /* Diagrams may run slightly wider than the prose column on desktop,
+     with their own horizontal scroll contained to the wrapper. */
+  @media (min-width: 768px) {
+    .prose-custom .mermaid-wrapper {
+      margin-left: -2rem;
+      margin-right: -2rem;
+    }
+  }
+
+  /* --- Floating Contents control (Phase 4) ------------------------------ */
+
+  .contents-root {
+    position: relative;
+  }
+
+  .contents-toggle {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.5rem;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .contents-toggle:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-hover);
+  }
+
+  @media (min-width: 1280px) {
+    .contents-toggle {
+      top: 8.5rem;
+      bottom: auto;
+      right: 1.75rem;
+    }
+  }
+
+  .contents-panel {
+    position: fixed;
+    z-index: 50;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(20rem, calc(100vw - 2rem));
+    padding: 1.5rem;
+    background-color: var(--color-bg-secondary);
+    border-left: 1px solid var(--color-border);
+    overflow-y: auto;
+    animation: contents-in 0.18s ease-out;
+  }
+
+  @media (min-width: 1280px) {
+    .contents-panel {
+      top: 8.5rem;
+      bottom: auto;
+      max-height: calc(100vh - 12rem);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+    }
+  }
+
+  @keyframes contents-in {
+    from {
+      opacity: 0;
+      transform: translateX(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .contents-close {
+    padding: 0.25rem;
+    color: var(--color-text-tertiary);
+    transition: color 0.2s ease;
+    border-radius: 2px;
+  }
+
+  .contents-close:hover {
+    color: var(--color-text-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contents-panel {
+      animation: none;
+    }
+  }
+
+  /* --- Reading progress line (decorative) ------------------------------- */
+
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 60;
+    pointer-events: none;
+    background-color: transparent;
+  }
+
+  .reading-progress-bar {
+    height: 100%;
+    width: 100%;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left center;
   }
 }
 

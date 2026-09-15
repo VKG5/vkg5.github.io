@@ -73,7 +73,16 @@
         noteTextColor: textPrimary,
         noteBorderColor: accent,
       },
-      flowchart: { curve: 'basis', padding: 16, htmlLabels: true, useMaxWidth: true },
+      flowchart: {
+        // Linear reads cleaner for pipeline/architecture diagrams than basis,
+        // which curls edges more than the diagram needs (Phase 7).
+        curve: 'linear',
+        padding: 24,
+        nodeSpacing: 55,
+        rankSpacing: 60,
+        htmlLabels: true,
+        useMaxWidth: true,
+      },
     };
   }
 

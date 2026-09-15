@@ -1,8 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import { formatDate, getReadingTime } from '@/lib/utils';
-import Tag from '@/components/common/Tag.astro';
-import TableOfContents from '@/components/blog/TableOfContents.astro';
+import ContentsControl from '@/components/blog/ContentsControl.astro';
 
 interface Props {
   title: string;
@@ -13,6 +12,8 @@ interface Props {
   tags?: string[];
   cover?: string;
   headings: { depth: number; slug: string; text: string }[];
+  prev?: { slug: string; title: string } | null;
+  next?: { slug: string; title: string } | null;
 }
 
 const {
@@ -24,6 +25,8 @@ const {
   tags = [],
   cover,
   headings,
+  prev,
+  next,
 } = Astro.props;
 
 const content = await Astro.slots.render('default');
@@ -32,9 +35,12 @@ const readingTime = getReadingTime(content);
 
 <BaseLayout title={title} description={description} image={cover} article>
   <article class="py-12 md:py-20">
+    <!-- Reading progress (decorative only) -->
+    <div class="reading-progress" aria-hidden="true"><div class="reading-progress-bar" id="reading-progress-bar"></div></div>
+
     <!-- Header -->
-    <header class="container-narrow mb-12">
-      <div class="flex items-center gap-3 frame-tag mb-4">
+    <header class="reading-column mb-12">
+      <div class="flex items-center gap-3 frame-tag mb-5">
         <a href={`/blog?category=${category}`} class="link uppercase">
           {category.replace(/-/g, ' ')}
         </a>
@@ -51,11 +57,9 @@ const readingTime = getReadingTime(content);
       <p class="lead mb-6">{description}</p>
       
       {tags.length > 0 && (
-        <div class="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <Tag>{tag}</Tag>
-          ))}
-        </div>
+        <p class="frame-tag uppercase">
+          {tags.join(' / ')}
+        </p>
       )}
       
       {updatedAt && (
@@ -67,133 +71,80 @@ const readingTime = getReadingTime(content);
     
     <!-- Cover image -->
     {cover && (
-      <div class="container mb-12">
+      <div class="reading-column-wide mb-12">
         <img
           src={cover}
           alt={title}
-          class="w-full rounded-xl border border-border"
+          class="w-full rounded-md border border-border"
         />
       </div>
     )}
     
-    <!-- Content with TOC -->
-    <div class="container relative">
-      <!-- Main content (centered) -->
-      <div class="max-w-3xl mx-auto">
-        <div class="prose-custom">
-          <slot />
-        </div>
+    <!-- Wide reading column -->
+    <div class="reading-column">
+      <div class="prose-custom">
+        <slot />
       </div>
-      
-      <!-- Sidebar TOC (desktop, sticky) -->
-      {headings.length > 0 && (
-        <aside id="toc-sidebar" class="hidden xl:block fixed right-8 top-32 w-64 overflow-y-auto no-scrollbar pb-8 z-30 transition-all duration-200" style="max-height: calc(100vh - 10rem);">
-          <TableOfContents headings={headings} />
-        </aside>
-      )}
     </div>
     
-    <!-- Smooth ending -->
-    <div class="container-narrow mt-20 mb-12">
-      <div class="tech-frame p-8 md:p-12 bg-bg-secondary text-center">
-        <span class="meta-label block mb-3">End of Note</span>
-        <h3 class="heading-4 mb-4">Found this useful?</h3>
-        <p class="text-text-secondary mb-6 max-w-lg mx-auto">
-          More field notes on graphics, procedural systems, tools, and pipelines are filed in the archive.
+    <!-- On-demand Contents -->
+    {headings.length > 0 && <ContentsControl headings={headings} />}
+    
+    <!-- End of Note -->
+    <div class="reading-column mt-20 mb-12">
+      <div class="border-t border-border pt-8">
+        <span class="meta-label block mb-4">End of Note</span>
+        <p class="text-text-secondary mb-6">
+          More field notes on graphics, procedural systems, tools, and pipelines
+          are filed in the archive.
         </p>
-        <div class="flex flex-wrap items-center justify-center gap-4">
-          <a href="/blog" class="btn btn-primary">← All Field Notes</a>
-          <a href="/contact" class="btn btn-ghost">Get in Touch</a>
-        </div>
+        <a href="/blog" class="link-underline text-accent text-sm">More field notes →</a>
       </div>
+
+      {(prev || next) && (
+        <nav class="mt-12 pt-8 border-t border-border grid sm:grid-cols-2 gap-8" aria-label="Adjacent field notes">
+          {prev && (
+            <a href={`/blog/${prev.slug}`} class="group">
+              <div class="frame-tag mb-1">← Previous</div>
+              <span class="font-display font-medium text-text-primary group-hover:text-accent transition-colors">
+                {prev.title}
+              </span>
+            </a>
+          )}
+          {next && (
+            <a href={`/blog/${next.slug}`} class="group sm:text-right sm:justify-self-end">
+              <div class="frame-tag mb-1">Next →</div>
+              <span class="font-display font-medium text-text-primary group-hover:text-accent transition-colors">
+                {next.title}
+              </span>
+            </a>
+          )}
+        </nav>
+      )}
     </div>
   </article>
 </BaseLayout>
 
 <script>
-  // Handle TOC sidebar positioning to avoid footer overlap
-  function initTocPositioning() {
-    const toc = document.getElementById('toc-sidebar') as HTMLElement | null;
-    const footer = document.querySelector('footer.border-t') as HTMLElement | null;
-    
-    if (!toc || !footer) return;
-    
-    const tocElement = toc;
-    const footerElement = footer;
-    const topOffset = 128; // top-32 = 8rem = 128px
-    const bottomPadding = 32; // Extra padding from footer
-    
-    function updateTocPosition() {
-      const footerRect = footerElement.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      
-      // Calculate available height
-      // If footer is visible, limit the TOC height
-      if (footerRect.top < viewportHeight) {
-        const availableHeight = footerRect.top - topOffset - bottomPadding;
-        tocElement.style.maxHeight = `${Math.max(availableHeight, 100)}px`;
-      } else {
-        // Footer not visible, use full available space
-        tocElement.style.maxHeight = `calc(100vh - 10rem)`;
-      }
+  // Subtle top reading-progress line. Decorative only — updates on scroll.
+  function initReadingProgress() {
+    const bar = document.getElementById('reading-progress-bar');
+    if (!bar) return;
+
+    function update() {
+      const article = document.querySelector('article');
+      if (!article || !bar) return;
+      const rect = article.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      const done = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 0;
+      bar.style.transform = `scaleX(${done})`;
     }
-    
-    // Run on scroll and resize
-    window.addEventListener('scroll', updateTocPosition, { passive: true });
-    window.addEventListener('resize', updateTocPosition, { passive: true });
-    
-    // Initial call
-    updateTocPosition();
-  }
-  
-  // Run when DOM is ready
-  document.addEventListener('DOMContentLoaded', initTocPositioning);
-  // Also run for Astro view transitions
-  document.addEventListener('astro:page-load', initTocPositioning);
 
-  // Active TOC heading highlighting
-  function initTocHighlight() {
-    const tocLinks = document.querySelectorAll('[data-toc-link]');
-    const headings = document.querySelectorAll('article [id]');
-    if (tocLinks.length === 0 || headings.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('id');
-            tocLinks.forEach((link) => {
-              const active = link.getAttribute('data-toc-link') === id;
-              link.classList.toggle('text-accent', active);
-              link.classList.toggle('border-accent', active);
-              link.classList.toggle('text-text-tertiary', !active);
-              link.classList.toggle('border-transparent', !active);
-            });
-          }
-        });
-      },
-      {
-        rootMargin: '-20% 0px -60% 0px',
-        threshold: 0,
-      }
-    );
-
-    headings.forEach((heading) => observer.observe(heading));
-
-    // Smooth scroll for TOC links
-    tocLinks.forEach((link) => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const id = link.getAttribute('data-toc-link');
-        const target = document.getElementById(id || '');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          history.replaceState(null, '', `#${id}`);
-        }
-      });
-    });
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
   }
 
-  document.addEventListener('DOMContentLoaded', initTocHighlight);
-  document.addEventListener('astro:page-load', initTocHighlight);
+  document.addEventListener('DOMContentLoaded', initReadingProgress);
+  document.addEventListener('astro:page-load', initReadingProgress);
 </script>
