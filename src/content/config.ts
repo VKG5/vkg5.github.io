@@ -22,6 +22,7 @@ const blog = defineCollection({
     tags: z.array(z.string()).default([]),
     series: z.string().optional(),
     seriesOrder: z.number().optional(),
+    section: z.string().optional(),
     featured: z.boolean().default(false),
     draft: z.boolean().default(false),
     cover: z.string().optional(),

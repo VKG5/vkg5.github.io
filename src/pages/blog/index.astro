@@ -3,17 +3,21 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PostCard from '@/components/blog/PostCard.astro';
 import { getCollection } from 'astro:content';
 import { sortByDate, filterDrafts } from '@/lib/utils';
-import { BLOG_CATEGORIES } from '@/lib/constants';
+import { BLOG_CATEGORIES, BLOG_SECTIONS } from '@/lib/constants';
 
 // Get all posts
 const allPosts = await getCollection('blog');
-const posts = sortByDate(filterDrafts(allPosts));
+const allPostsFiltered = sortByDate(filterDrafts(allPosts));
 
-// Get category from query (for filtering)
+// Posts for the general grid (those NOT in a section hub)
+const generalPosts = allPostsFiltered.filter(p => !p.data.section);
+
+// Get category from query (for filtering the general grid)
 const currentCategory = Astro.url.searchParams.get('category');
-const filteredPosts = currentCategory 
-  ? posts.filter((p) => p.data.category === currentCategory)
-  : posts;
+const filteredGeneralPosts = currentCategory 
+  ? generalPosts.filter((p) => p.data.category === currentCategory)
+  : generalPosts;
+
 ---
 
 <BaseLayout
@@ -52,10 +56,54 @@ const filteredPosts = currentCategory
         </div>
       </div>
       
+
+      <!-- Hub Sections -->
+      <div class="mb-12 grid gap-6" data-animate>
+        {BLOG_SECTIONS.map((section) => {
+          const sectionPosts = allPostsFiltered.filter(p => p.data.section === section.slug);
+          if (sectionPosts.length === 0) return null;
+
+          return (
+            <a 
+              href={`/blog/${section.slug}`} 
+              class="group tech-frame card-lift block p-8 bg-bg-secondary hover:bg-bg-tertiary transition-colors relative overflow-hidden"
+            >
+              <div class="relative z-10">
+                <div class="flex items-center gap-2 mb-4">
+                  <span class="frame-tag uppercase text-accent">Section</span>
+                  <span class="text-border">·</span>
+                  <span class="frame-tag uppercase">{section.label}</span>
+                </div>
+                <h2 class="heading-3 mb-2 group-hover:text-accent transition-colors">{section.label}</h2>
+                <p class="text-text-secondary max-w-2xl mb-6">{section.description}</p>
+                
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="frame-tag">{String(sectionPosts.length).padStart(2, '0')} ENTRY</span>
+                  </div>
+                  <span class="text-sm text-accent group-hover:translate-x-1 transition-transform font-medium">
+                    Open series →
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Decorative background logo -->
+              <img 
+                src="/images/godot-logo.svg" 
+                alt="" 
+                class="absolute right-[-2%] top-[-5%] w-1/3 opacity-10 pointer-events-none select-none grayscale group-hover:opacity-20 transition-opacity" 
+              />
+            </a>
+          );
+        })}
+      </div>
+      
       <!-- Posts Grid -->
-      {filteredPosts.length > 0 ? (
+
+      <!-- Posts Grid -->
+      {filteredGeneralPosts.length > 0 ? (
         <div id="posts-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post, index) => (
+          {generalPosts.map((post, index) => (
             <div data-animate style={`animation-delay: ${index * 50}ms`} data-category={post.data.category} class="post-item">
               <PostCard
                 title={post.data.title}
