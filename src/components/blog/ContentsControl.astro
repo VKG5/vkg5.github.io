@@ -1,0 +1,160 @@
+---
+/**
+ * Floating, on-demand article navigation ("Contents").
+ *
+ * Replaces the permanently visible desktop TOC sidebar. The trigger lives on
+ * the right edge of the viewport; the panel is a compact drawer that inherits
+ * site colours and closes on Escape, outside click, or after navigating.
+ * Owns the active-section highlighting observer (moved from BlogPost.astro).
+ */
+import TableOfContents from './TableOfContents.astro';
+
+interface Props {
+  headings: { depth: number; slug: string; text: string }[];
+}
+
+const { headings } = Astro.props;
+const hasHeadings = headings.some((h) => h.depth >= 2 && h.depth <= 3);
+---
+
+{
+  hasHeadings && (
+    <div class="contents-root" data-contents>
+      {/* Floating trigger */}
+      <button
+        type="button"
+        id="contents-toggle"
+        class="contents-toggle"
+        aria-expanded="false"
+        aria-controls="contents-panel"
+        aria-label="Open article contents"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+        <span>Contents</span>
+      </button>
+
+      {/* Panel */}
+      <div
+        id="contents-panel"
+        class="contents-panel"
+        role="dialog"
+        aria-label="Article contents"
+        aria-modal="false"
+        hidden
+      >
+        <div class="flex items-center justify-between mb-3">
+          <span class="meta-label">Contents</span>
+          <button
+            type="button"
+            class="contents-close"
+            aria-label="Close contents"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <TableOfContents headings={headings} />
+      </div>
+    </div>
+  )
+}
+
+<script>
+  function initContents() {
+    const root = document.querySelector<HTMLElement>('[data-contents]');
+    if (!root || root.dataset.initialized) return;
+    root.dataset.initialized = 'true';
+
+    const toggle = root.querySelector<HTMLButtonElement>('#contents-toggle');
+    const panel = root.querySelector<HTMLElement>('#contents-panel');
+    const closeBtn = root.querySelector<HTMLButtonElement>('.contents-close');
+    if (!toggle || !panel) return;
+
+    let lastFocused: HTMLElement | null = null;
+    let isMobile = () => window.innerWidth < 768;
+
+    function openPanel() {
+      panel!.hidden = false;
+      toggle!.setAttribute('aria-expanded', 'true');
+      toggle!.setAttribute('aria-label', 'Close article contents');
+      // Move focus into the panel so keyboard users follow it.
+      lastFocused = document.activeElement as HTMLElement;
+      const firstLink = panel!.querySelector<HTMLElement>('.toc-link');
+      (firstLink ?? closeBtn)?.focus();
+      if (isMobile()) document.body.style.overflow = 'hidden';
+    }
+
+    function closePanel(returnFocus = true) {
+      panel!.hidden = true;
+      toggle!.setAttribute('aria-expanded', 'false');
+      toggle!.setAttribute('aria-label', 'Open article contents');
+      document.body.style.overflow = '';
+      if (returnFocus && lastFocused) {
+        lastFocused.focus();
+        lastFocused = null;
+      }
+    }
+
+    toggle.addEventListener('click', () => {
+      panel.hidden ? openPanel() : closePanel();
+    });
+    closeBtn?.addEventListener('click', () => closePanel());
+
+    // Escape closes; focus returns to the trigger.
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) closePanel();
+    });
+
+    // Outside click closes (pointer only; keyboard focus stays inside).
+    document.addEventListener('pointerdown', (e) => {
+      if (!panel.hidden && !root.contains(e.target as Node)) closePanel(false);
+    });
+
+    // Close after navigating; keep smooth-scroll + URL update.
+    panel.querySelectorAll<HTMLAnchorElement>('.toc-link').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = link.getAttribute('data-toc-link');
+        const target = id ? document.getElementById(id) : null;
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', `#${id}`);
+        }
+        closePanel(false);
+      });
+    });
+
+    // Active-section highlighting (IntersectionObserver on article headings).
+    const tocLinks = panel.querySelectorAll<HTMLAnchorElement>('[data-toc-link]');
+    const headings = document.querySelectorAll<HTMLElement>('article [id]');
+    if (tocLinks.length === 0 || headings.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.getAttribute('id');
+          tocLinks.forEach((link) => {
+            const active = link.getAttribute('data-toc-link') === id;
+            link.classList.toggle('text-accent', active);
+            link.classList.toggle('border-accent', active);
+            link.classList.toggle('text-text-tertiary', !active);
+            link.classList.toggle('border-transparent', !active);
+          });
+        });
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 },
+    );
+    headings.forEach((heading) => observer.observe(heading));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initContents);
+  } else {
+    initContents();
+  }
+  document.addEventListener('astro:page-load', initContents);
+</script>

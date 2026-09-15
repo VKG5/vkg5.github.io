@@ -1,16 +1,28 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogPost from '@/layouts/BlogPost.astro';
+import { sortByDate, filterDrafts } from '@/lib/utils';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
+  const published = sortByDate(filterDrafts(posts));
+  return posts.map((post) => {
+    const index = published.findIndex((p) => p.slug === post.slug);
+    // Newest-first list: "next" is the newer note, "prev" the older one.
+    const next = index > 0 ? published[index - 1] : undefined;
+    const prev = index >= 0 && index < published.length - 1 ? published[index + 1] : undefined;
+    return {
+      params: { slug: post.slug },
+      props: {
+        post,
+        next: next ? { slug: next.slug, title: next.data.title } : null,
+        prev: prev ? { slug: prev.slug, title: prev.data.title } : null,
+      },
+    };
+  });
 }
 
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const { Content, headings } = await post.render();
 ---
 
@@ -23,6 +35,8 @@ const { Content, headings } = await post.render();
   tags={post.data.tags}
   cover={post.data.cover}
   headings={headings}
+  prev={prev}
+  next={next}
 >
   <Content />
 </BlogPost>

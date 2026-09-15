@@ -10,14 +10,13 @@ const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
 ---
 
 {toc.length > 0 && (
-  <nav class="text-sm" data-toc>
-    <h4 class="font-display font-semibold text-text-primary mb-4">On this page</h4>
-    <ul class="space-y-1 border-l border-border">
+  <nav class="text-sm" data-toc aria-label="Article contents">
+    <ul class="space-y-1 border-l border-border max-h-[60vh] overflow-y-auto no-scrollbar">
       {toc.map((heading) => (
         <li class={heading.depth === 3 ? 'ml-4' : ''}>
           <a
             href={`#${heading.slug}`}
-            class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent"
+            class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1.5 pl-4 -ml-px border-l border-transparent hover:border-accent"
             data-toc-link={heading.slug}
           >
             {heading.text}
