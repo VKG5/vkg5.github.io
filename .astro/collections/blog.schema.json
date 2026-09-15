@@ -54,7 +54,8 @@
             "pipelines",
             "houdini",
             "blender",
-            "research"
+            "research",
+            "atmosphere"
           ]
         },
         "tags": {

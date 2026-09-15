@@ -18,6 +18,7 @@ const blog = defineCollection({
       'houdini',
       'blender',
       'research',
+      'atmosphere'
     ]),
     tags: z.array(z.string()).default([]),
     series: z.string().optional(),

@@ -1,0 +1,148 @@
+---
+/**
+ * Hydrates every diagram produced by src/plugins/rehype-mermaid.mjs.
+ *
+ * Mounted once per page by BaseLayout, so a blog post only needs a
+ * ```mermaid fence — no per-file import and no per-file script. The mermaid
+ * bundle is imported lazily, and only for diagrams that approach the viewport:
+ * a post with twenty diagrams does not pay for the ones nobody scrolls to.
+ *
+ * Colours are read from the site's CSS custom properties, so switching the
+ * light/dark toggle re-renders the diagrams instead of shipping one baked
+ * palette (see the `.mermaid-wrapper` rules in src/styles/global.css).
+ */
+---
+
+<script>
+  import type { MermaidConfig } from 'mermaid';
+
+  type Mermaid = typeof import('mermaid').default;
+
+  const DIAGRAM_SELECTOR = '.mermaid[data-chart]';
+  const WRAPPER_SELECTOR = '.mermaid-wrapper';
+  const THEME_DEBOUNCE_MS = 150;
+
+  let mermaidPromise: Promise<Mermaid> | null = null;
+  let renderCount = 0;
+
+  const renderedWrappers = new WeakSet<HTMLElement>();
+  const observedWrappers = new WeakSet<HTMLElement>();
+
+  function loadMermaid(): Promise<Mermaid> {
+    mermaidPromise ??= import('mermaid').then((module) => module.default);
+    return mermaidPromise;
+  }
+
+  /** A themed CSS custom property, with the build-time colour as fallback. */
+  function themeColor(name: string, fallback: string): string {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
+  function mermaidConfig(): MermaidConfig {
+    const textPrimary = themeColor('--color-text-primary', '#EEE9DE');
+    const accent = themeColor('--color-accent', '#C97C45');
+    const fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+
+    return {
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'base',
+      fontFamily,
+      themeVariables: {
+        fontFamily,
+        fontSize: '15px',
+        primaryColor: themeColor('--color-bg-tertiary', '#14120E'),
+        mainBkg: themeColor('--color-bg-tertiary', '#14120E'),
+        primaryTextColor: textPrimary,
+        nodeTextColor: textPrimary,
+        textColor: textPrimary,
+        titleColor: textPrimary,
+        primaryBorderColor: accent,
+        nodeBorder: accent,
+        lineColor: themeColor('--color-text-secondary', '#969084'),
+        // mermaid's default arrowhead fill is near-black (#0b0b0b), invisible on
+        // the dark background — keep arrowheads on the line colour
+        arrowheadColor: themeColor('--color-text-secondary', '#969084'),
+        edgeLabelBackground: themeColor('--color-bg-primary', '#080807'),
+        clusterBkg: themeColor('--color-bg-secondary', '#0B0A08'),
+        clusterBorder: themeColor('--color-border-hover', '#332F27'),
+        secondaryColor: themeColor('--color-bg-secondary', '#0B0A08'),
+        tertiaryColor: themeColor('--color-bg-secondary', '#0B0A08'),
+        noteBkgColor: themeColor('--color-accent-subtle', '#241A10'),
+        noteTextColor: textPrimary,
+        noteBorderColor: accent,
+      },
+      flowchart: { curve: 'basis', padding: 16, htmlLabels: true, useMaxWidth: true },
+    };
+  }
+
+  async function renderDiagram(wrapper: HTMLElement): Promise<void> {
+    const source = wrapper.querySelector<HTMLElement>(DIAGRAM_SELECTOR);
+    const chart = source?.dataset.chart;
+    if (!source || !chart) return;
+
+    const mermaid = await loadMermaid();
+    mermaid.initialize(mermaidConfig());
+
+    try {
+      renderCount += 1;
+      const { svg } = await mermaid.render(`mermaid-diagram-${renderCount}`, chart);
+      source.innerHTML = svg;
+      wrapper.dataset.rendered = 'true';
+      renderedWrappers.add(wrapper);
+    } catch (error) {
+      // Leave the fence source visible (flagged by CSS) and shout in the console
+      wrapper.dataset.rendered = 'error';
+      console.error('[mermaid] could not render diagram:\n', chart, error);
+    }
+  }
+
+  /** SVG colours are baked in, so finished diagrams are re-rendered on theme change. */
+  function rerenderAll(): void {
+    document.querySelectorAll<HTMLElement>(WRAPPER_SELECTOR).forEach((wrapper) => {
+      if (!renderedWrappers.has(wrapper)) return;
+      const source = wrapper.querySelector<HTMLElement>(DIAGRAM_SELECTOR);
+      if (!source) return;
+      source.textContent = source.dataset.chart ?? '';
+      delete wrapper.dataset.rendered;
+      void renderDiagram(wrapper);
+    });
+  }
+
+  let viewportObserver: IntersectionObserver | null = null;
+  let themeObserver: MutationObserver | null = null;
+  let themeTimer: number | undefined;
+
+  /** Pages without diagrams never create an observer, let alone import mermaid. */
+  function init(): void {
+    const wrappers = document.querySelectorAll<HTMLElement>(WRAPPER_SELECTOR);
+    if (wrappers.length === 0) return;
+
+    viewportObserver ??= new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          viewportObserver?.unobserve(entry.target);
+          void renderDiagram(entry.target as HTMLElement);
+        });
+      },
+      { rootMargin: '400px 0px', threshold: 0 },
+    );
+
+    wrappers.forEach((wrapper) => {
+      if (observedWrappers.has(wrapper)) return;
+      observedWrappers.add(wrapper);
+      viewportObserver?.observe(wrapper);
+    });
+
+    themeObserver ??= new MutationObserver(() => {
+      window.clearTimeout(themeTimer);
+      themeTimer = window.setTimeout(rerenderAll, THEME_DEBOUNCE_MS);
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>

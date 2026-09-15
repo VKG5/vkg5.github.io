@@ -7,7 +7,7 @@ tags: [tutorial, shaders, glsl, clouds, pcg, noise]
 series: shaders
 seriesOrder: 1
 section: godot-atmosphere
-featured: true
+featured: false
 draft: false
 ---
 
@@ -456,42 +456,12 @@ Godot, which is an amazing open-source engine, for this task. The same concept c
 Render Targets are Dynamic 2D Textures, whose content can be updated during runtime. They are useful for a bunch of things, for example,
 a painting/drawing board in game. In Godot the hierarchy is as follows:
 
-<div className="my-8 p-6 rounded-lg border border-border" style={{backgroundColor: 'var(--color-bg-secondary)'}}>
-    <div className="flex flex-col items-center gap-6">
-        {/* Root Node */}
-        <div className="flex flex-col items-center">
-            <div className="px-6 py-3 rounded-lg shadow-md border-2" style={{backgroundColor: 'rgba(47, 195, 247, 0.1)', borderColor: 'var(--color-accent)'}}>
-                <span className="font-semibold text-lg" style={{color: 'var(--color-accent)'}}>Node2D</span>
-            </div>
-            <div className="w-0.5 h-8" style={{backgroundColor: 'var(--color-border)'}}></div>
-        </div>
-
-        {/* First Level Children */}
-        <div className="flex gap-12">
-            {/* TextureRect Branch */}
-            <div className="flex flex-col items-center">
-                <div className="w-0.5 h-6" style={{backgroundColor: 'var(--color-border)'}}></div>
-                <div className="px-5 py-2.5 rounded-lg shadow-sm border-2 transition-colors hover:border-accent" style={{backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)'}}>
-                    <span className="font-medium" style={{color: 'var(--color-text-primary)'}}>TextureRect</span>
-                </div>
-            </div>
-
-            {/* Viewport Branch */}
-            <div className="flex flex-col items-center">
-                <div className="w-0.5 h-6" style={{backgroundColor: 'var(--color-border)'}}></div>
-                <div className="px-5 py-2.5 rounded-lg shadow-sm border-2" style={{backgroundColor: 'var(--color-bg-primary)', borderColor: 'var(--color-border)'}}>
-                    <span className="font-medium" style={{color: 'var(--color-text-primary)'}}>Viewport</span>
-                </div>
-                <div className="w-0.5 h-8" style={{backgroundColor: 'var(--color-border)'}}></div>
-                
-                {/* Clouds Child */}
-                <div className="px-5 py-2.5 rounded-lg shadow-sm border-2" style={{backgroundColor: 'rgba(47, 195, 247, 0.05)', borderColor: 'rgba(47, 195, 247, 0.5)'}}>
-                    <span className="font-medium" style={{color: 'var(--color-accent)'}}>Clouds.tscn</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+```mermaid
+flowchart TB
+    ROOT["Node2D"] --> TEX["TextureRect"]
+    ROOT --> VIEWPORT["Viewport"]
+    VIEWPORT --> CLOUDS["Clouds.tscn"]
+```
 
 Here `Node2D` is the root of the scene, which acts as a container for all children node. In the texture rect I have created a `ViewportTexture`, which renders the `Viewport` node in a larger size. Godot
 provides basic anti-aliasing algorithms such as **FXAA, MSAA**. This is a very basic method for upscaling and can be improved upon further with custom upscaling algorithms. One can create a custom node

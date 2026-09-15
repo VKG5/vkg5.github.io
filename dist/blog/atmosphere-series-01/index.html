@@ -1,0 +1,1200 @@
+<!DOCTYPE html><html lang="en" class="scroll-smooth dark"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="canonical" href="https://varungupta.dev/blog/atmosphere-series-01/"><!-- Theme Script (runs before page renders to prevent flash) --><script>
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    </script><!-- Primary Meta Tags --><title>Building a Physically Motivated Atmosphere Renderer in Godot 4.5 — An Introduction | Varun Kumar Gupta</title><meta name="title" content="Building a Physically Motivated Atmosphere Renderer in Godot 4.5 — An Introduction | Varun Kumar Gupta"><meta name="description" content="An introduction to the Atmosphere series: the rendering model, GPU architecture, LUTs, sky and cloud systems, runtime integration, performance."><meta name="author" content="Varun Kumar Gupta"><!-- Open Graph / Facebook --><meta property="og:type" content="article"><meta property="og:url" content="https://varungupta.dev/blog/atmosphere-series-01/"><meta property="og:title" content="Building a Physically Motivated Atmosphere Renderer in Godot 4.5 — An Introduction | Varun Kumar Gupta"><meta property="og:description" content="An introduction to the Atmosphere series: the rendering model, GPU architecture, LUTs, sky and cloud systems, runtime integration, performance."><meta property="og:image" content="https://varungupta.dev/images/portrait.jpg"><meta property="og:site_name" content="Varun Kumar Gupta"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:url" content="https://varungupta.dev/blog/atmosphere-series-01/"><meta name="twitter:title" content="Building a Physically Motivated Atmosphere Renderer in Godot 4.5 — An Introduction | Varun Kumar Gupta"><meta name="twitter:description" content="An introduction to the Atmosphere series: the rendering model, GPU architecture, LUTs, sky and cloud systems, runtime integration, performance."><meta name="twitter:image" content="https://varungupta.dev/images/portrait.jpg"><!-- Favicon --><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/x-icon" href="/favicon.ico"><!-- RSS --><link rel="alternate" type="application/rss+xml" title="Varun Kumar Gupta RSS Feed" href="/feed.xml"><!-- Fonts --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><!-- Theme --><meta name="theme-color" content="#080807"><link rel="stylesheet" href="/_astro/about.Bma3jvLB.css">
+<link rel="stylesheet" href="/_astro/_slug_.CltZVmab.css"></head> <body class="min-h-screen flex flex-col antialiased"> <div class="noise-overlay"></div> <canvas id="ambient-particles" class="ambient-particles" aria-hidden="true" data-astro-cid-vr2zt7iq></canvas> <script type="module">function f(){const i=document.getElementById("ambient-particles");if(!i||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;const t=i.getContext("2d");if(!t)return;let n=0,a=0,o=0;const r=Math.min(window.devicePixelRatio||1,1.5),u=Math.max(30,Math.min(70,Math.floor(window.innerWidth/22)));let c=[];function w(){return getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim()||"#c97c45"}function l(){n=window.innerWidth,a=window.innerHeight,i.width=Math.floor(n*r),i.height=Math.floor(a*r),i.style.width=`${n}px`,i.style.height=`${a}px`,t.setTransform(r,0,0,r,0,0)}function m(){c=Array.from({length:u},()=>({x:Math.random()*n,y:Math.random()*a,r:.6+Math.random()*1.6,vx:(Math.random()-.5)*.12,vy:-.04-Math.random()*.14,opacity:.12+Math.random()*.3,twinkleSpeed:.4+Math.random()*1.2,twinklePhase:Math.random()*Math.PI*2}))}let s=performance.now();function d(M){o=requestAnimationFrame(d);const h=(M-s)/1e3,y=w();t.clearRect(0,0,n,a),t.fillStyle=y;for(const e of c){e.x+=e.vx,e.y+=e.vy,e.y<-4&&(e.y=a+4),e.x<-4&&(e.x=n+4),e.x>n+4&&(e.x=-4);const p=Math.sin(h*.5+e.twinklePhase)*.15,x=.65+.35*Math.sin(h*e.twinkleSpeed+e.twinklePhase);t.globalAlpha=e.opacity*x,t.beginPath(),t.arc(e.x+p,e.y,e.r,0,Math.PI*2),t.fill()}t.globalAlpha=1}l(),m(),window.addEventListener("resize",()=>{l(),m()}),document.addEventListener("visibilitychange",()=>{document.hidden?cancelAnimationFrame(o):(s=performance.now()-0,o=requestAnimationFrame(d))}),o=requestAnimationFrame(d),document.addEventListener("astro:before-swap",()=>{cancelAnimationFrame(o)})}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",f):f();</script>  <script type="module" src="/_astro/MermaidRenderer.astro_astro_type_script_index_0_lang.CzZ9iIyF.js"></script> <div class="custom-cursor" id="custom-cursor"></div> <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50"> <div class="container"> <nav class="flex items-center justify-between h-20"> <!-- Logo — brass marker --> <a href="/" class="flex items-center gap-3 group" aria-label="Varun Kumar Gupta — Home"> <span class="w-9 h-9 bg-accent flex items-center justify-center font-mono font-semibold text-bg-primary text-sm rounded-[4px] transition-transform duration-300 group-hover:rotate-45">
+V
+</span> <span class="font-display font-semibold text-text-primary group-hover:text-accent transition-colors hidden sm:block"> Varun Kumar Gupta </span> </a> <!-- Desktop Navigation --> <ul class="hidden md:flex items-center gap-1"> <li> <a href="/" class="relative px-4 py-2 text-sm font-medium transition-colors rounded-md
+                  text-text-secondary hover:text-text-primary hover:bg-bg-secondary"> Home  </a> </li><li> <a href="/projects" class="relative px-4 py-2 text-sm font-medium transition-colors rounded-md
+                  text-text-secondary hover:text-text-primary hover:bg-bg-secondary"> Work  </a> </li><li> <a href="/blog" class="relative px-4 py-2 text-sm font-medium transition-colors rounded-md
+                  text-text-primary"> Field Notes <span class="absolute bottom-0.5 left-4 right-4 h-px bg-accent"></span> </a> </li><li> <a href="/about" class="relative px-4 py-2 text-sm font-medium transition-colors rounded-md
+                  text-text-secondary hover:text-text-primary hover:bg-bg-secondary"> About  </a> </li><li> <a href="/contact" class="relative px-4 py-2 text-sm font-medium transition-colors rounded-md
+                  text-text-secondary hover:text-text-primary hover:bg-bg-secondary"> Contact  </a> </li> </ul> <!-- Theme Toggle --> <button id="theme-toggle" class="p-2 text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-bg-secondary" aria-label="Toggle theme"> <svg class="w-5 h-5 dark-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path> </svg> <svg class="w-5 h-5 light-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path> </svg> </button> <!-- Mobile Menu Button --> <button id="mobile-menu-button" class="md:hidden p-2 text-text-secondary hover:text-text-primary transition-colors" aria-label="Toggle menu" aria-expanded="false"> <svg class="w-6 h-6 menu-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path> </svg> <svg class="w-6 h-6 menu-close hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path> </svg> </button> </nav> </div> <!-- Mobile Menu --> <div id="mobile-menu" class="md:hidden hidden border-t border-border/50"> <div class="container py-4"> <ul class="flex flex-col gap-2"> <li> <a href="/" class="block px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                  text-text-secondary hover:bg-bg-secondary hover:text-text-primary"> Home </a> </li><li> <a href="/projects" class="block px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                  text-text-secondary hover:bg-bg-secondary hover:text-text-primary"> Work </a> </li><li> <a href="/blog" class="block px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                  bg-accent/10 text-accent"> Field Notes </a> </li><li> <a href="/about" class="block px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                  text-text-secondary hover:bg-bg-secondary hover:text-text-primary"> About </a> </li><li> <a href="/contact" class="block px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                  text-text-secondary hover:bg-bg-secondary hover:text-text-primary"> Contact </a> </li> </ul> </div> </div> </header> <!-- Spacer for fixed header --> <div class="h-20"></div> <script type="module">const t=document.getElementById("mobile-menu-button"),c=document.getElementById("mobile-menu"),s=t?.querySelector(".menu-open"),d=t?.querySelector(".menu-close");t?.addEventListener("click",()=>{const e=t.getAttribute("aria-expanded")==="true";t.setAttribute("aria-expanded",String(!e)),c?.classList.toggle("hidden"),s?.classList.toggle("hidden"),d?.classList.toggle("hidden")});const n=document.getElementById("theme-toggle"),l=n?.querySelector(".dark-icon"),i=n?.querySelector(".light-icon");function o(){const e=document.documentElement.classList.contains("dark");l?.classList.toggle("hidden",!e),i?.classList.toggle("hidden",e)}o();n?.addEventListener("click",()=>{const e=document.documentElement.classList.contains("dark");document.documentElement.classList.toggle("dark",!e),localStorage.setItem("theme",e?"light":"dark"),o()});</script> <!-- Social Links Sidebar --> <div class="hidden lg:block fixed left-6 top-1/2 -translate-y-1/2 z-40"> <div class="flex flex-col gap-9"> <a href="https://github.com/VKG5" target="_blank" rel="noopener noreferrer" class="text-text-tertiary hover:text-text-primary hover:scale-125 transition-all duration-300 ease-out transform" aria-label="GitHub"> <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"> <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path> </svg> </a> <a href="https://linkedin.com/in/varunkumargupta5" target="_blank" rel="noopener noreferrer" class="text-text-tertiary hover:text-text-primary hover:scale-125 transition-all duration-300 ease-out transform" aria-label="LinkedIn"> <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"> <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path> </svg> </a> <a href="https://x.com/Bawa_Gupta_" target="_blank" rel="noopener noreferrer" class="text-text-tertiary hover:text-text-primary hover:scale-125 transition-all duration-300 ease-out transform" aria-label="Twitter"> <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"> <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path> </svg> </a> <a href="mailto:varunkumargupta914@gmail.com" class="text-text-tertiary hover:text-text-primary hover:scale-125 transition-all duration-300 ease-out transform" aria-label="Email"> <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path> </svg> </a> </div> </div> <main class="flex-1">  <article class="py-12 md:py-20"> <!-- Header --> <header class="container-narrow mb-12"> <div class="flex items-center gap-3 frame-tag mb-4"> <a href="/blog?category=atmosphere" class="link uppercase"> atmosphere </a> <span>·</span> <time datetime="2026-09-15T00:00:00.000Z"> September 15, 2026 </time> <span>·</span> <span>39 min read</span> </div> <h1 class="heading-1 mb-6">Building a Physically Motivated Atmosphere Renderer in Godot 4.5 — An Introduction</h1> <p class="lead mb-6">An introduction to the Atmosphere series: the rendering model, GPU architecture, LUTs, sky and cloud systems, runtime integration, performance.</p> <div class="flex flex-wrap gap-2"> <span class="tag"> godot </span><span class="tag"> rendering </span><span class="tag"> atmosphere </span><span class="tag"> shaders </span><span class="tag"> compute-shaders </span><span class="tag"> vulkan </span><span class="tag"> gpu </span><span class="tag"> procedural </span><span class="tag"> technical-art </span> </div>  </header> <!-- Cover image -->  <!-- Content with TOC --> <div class="container relative"> <!-- Main content (centered) --> <div class="max-w-3xl mx-auto"> <div class="prose-custom">  <h1 id="building-a-physically-motivated-atmosphere-renderer-in-godot-45--an-introduction">Building a Physically Motivated Atmosphere Renderer in Godot 4.5 — An Introduction</h1>
+<p>There is a particular kind of rendering project where the final image is deceptively simple.</p>
+<p>A blue sky. A brighter horizon. An orange sunset. A few stars. Some clouds. Distant mountains becoming hazy.</p>
+<p>The image looks simple because all of the complexity has been pushed underneath it.</p>
+<p>This series documents the construction of a modular atmospheric rendering system for <strong>Godot 4.5</strong> — not as a single shader, and not as a collection of visual tricks, but as a small rendering stack built around physically motivated scattering, precomputed lookup tables, GPU compute infrastructure, runtime interfaces, and engine integration.</p>
+<p>The goal is not to reproduce every detail of a production planetary renderer. The goal is to build something that has enough physical structure to behave plausibly, enough modularity to be useful inside a game engine, and enough engineering discipline that the system can survive contact with a real project.</p>
+<p>That distinction matters.</p>
+<p>A physically motivated renderer is not just a collection of equations. It is also a resource lifecycle, a data flow, a set of coordinate conventions, a shader interface, a scheduling problem, an editor integration problem, and eventually a performance problem.</p>
+<p>This introduction is the map for the series.</p>
+<p>The individual posts will go much deeper into the implementation. This post is here so that, months from now, someone can return to the project and understand <strong>what exists, why it exists, how the parts fit together, and where to look when something breaks</strong>.</p>
+<hr/>
+<h2 id="what-we-are-actually-building">What We Are Actually Building</h2>
+<p>At the highest level, the system takes a small set of physical and artistic parameters and turns them into several layers of atmospheric lighting.</p>
+<p>The core optical model is based on three major atmospheric processes:</p>
+<ul>
+<li><strong>Rayleigh scattering</strong> for molecular scattering and the wavelength-dependent blue appearance of the sky.</li>
+<li><strong>Mie scattering</strong> for aerosols, haze, and the strongly forward-scattered component that becomes important around the sun and at low elevations.</li>
+<li><strong>Ozone absorption</strong> for wavelength-selective extinction, particularly around the upper-atmosphere ozone layer.</li>
+</ul>
+<p>Density is altitude-dependent. Optical depth is accumulated along rays. Transmittance follows Beer’s law:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>T</mi><mo>=</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>τ</mi></mrow></msup></mrow><annotation encoding="application/x-tex">T = e^{-\tau}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.1389em">T</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:0.8213em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8213em"><span style="top:-3.113em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathnormal mtight" style="margin-right:0.1132em">τ</span></span></span></span></span></span></span></span></span></span></span></span></span>
+<p>where <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal" style="margin-right:0.1132em">τ</span></span></span></span> is the integrated optical depth along the path.</p>
+<p>The rendering side then builds on that foundation with:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    AP([&#34;Atmosphere Parameters&#34;])
+
+    RMO[&#34;Rayleigh / Mie / Ozone&#34;]
+    PG[&#34;Planet Geometry&#34;]
+    CS[&#34;Celestial State&#34;]
+
+    AP --> RMO
+    AP --> PG
+    AP --> CS
+
+    SC[&#34;Scattering Core&#34;]
+    RP[&#34;Runtime Parameters&#34;]
+
+    RMO --> SC
+    PG --> SC
+    PG --> RP
+    CS --> RP
+
+    LUT[&#34;Precomputed GPU LUTs&#34;]
+    SC --> LUT
+
+    TRANS[&#34;Transmittance&#34;]
+    MS[&#34;Multi-Scattering&#34;]
+    SV[&#34;Sky-View&#34;]
+    LUT --> TRANS
+    LUT --> MS
+    LUT --> SV
+
+    SKY[&#34;Custom Sky Shader&#34;]
+    TRANS --> SKY
+    MS --> SKY
+    SV --> SKY
+
+    ATM[&#34;Atmosphere&#34;]
+    SUN[&#34;Sun Disk&#34;]
+    NIGHT[&#34;Night Layers&#34;]
+    SKY --> ATM
+    SKY --> SUN
+    SKY --> NIGHT
+
+    STARS[&#34;Stars / Moon / Milky Way&#34;]
+    NEB[&#34;Nebulae / Aurora&#34;]
+    NIGHT --> STARS
+    NIGHT --> NEB
+
+    CLOUD[&#34;Cloud Occlusion&#34;]
+    STARS --> CLOUD
+    NEB --> CLOUD
+
+    FINAL[&#34;Final Sky Radiance&#34;]
+    CLOUD --> FINAL
+
+    APER[&#34;Aerial Perspective / Object Fog&#34;]
+    AMB[&#34;Ambient Lighting / Sun Lighting&#34;]
+    FINAL --> APER
+    FINAL --> AMB">flowchart TB
+    AP([&quot;Atmosphere Parameters&quot;])
+
+    RMO[&quot;Rayleigh / Mie / Ozone&quot;]
+    PG[&quot;Planet Geometry&quot;]
+    CS[&quot;Celestial State&quot;]
+
+    AP --&gt; RMO
+    AP --&gt; PG
+    AP --&gt; CS
+
+    SC[&quot;Scattering Core&quot;]
+    RP[&quot;Runtime Parameters&quot;]
+
+    RMO --&gt; SC
+    PG --&gt; SC
+    PG --&gt; RP
+    CS --&gt; RP
+
+    LUT[&quot;Precomputed GPU LUTs&quot;]
+    SC --&gt; LUT
+
+    TRANS[&quot;Transmittance&quot;]
+    MS[&quot;Multi-Scattering&quot;]
+    SV[&quot;Sky-View&quot;]
+    LUT --&gt; TRANS
+    LUT --&gt; MS
+    LUT --&gt; SV
+
+    SKY[&quot;Custom Sky Shader&quot;]
+    TRANS --&gt; SKY
+    MS --&gt; SKY
+    SV --&gt; SKY
+
+    ATM[&quot;Atmosphere&quot;]
+    SUN[&quot;Sun Disk&quot;]
+    NIGHT[&quot;Night Layers&quot;]
+    SKY --&gt; ATM
+    SKY --&gt; SUN
+    SKY --&gt; NIGHT
+
+    STARS[&quot;Stars / Moon / Milky Way&quot;]
+    NEB[&quot;Nebulae / Aurora&quot;]
+    NIGHT --&gt; STARS
+    NIGHT --&gt; NEB
+
+    CLOUD[&quot;Cloud Occlusion&quot;]
+    STARS --&gt; CLOUD
+    NEB --&gt; CLOUD
+
+    FINAL[&quot;Final Sky Radiance&quot;]
+    CLOUD --&gt; FINAL
+
+    APER[&quot;Aerial Perspective / Object Fog&quot;]
+    AMB[&quot;Ambient Lighting / Sun Lighting&quot;]
+    FINAL --&gt; APER
+    FINAL --&gt; AMB</pre></div>
+<p>That diagram intentionally includes pieces that are not all evaluated in the same shader.</p>
+<p>Some information is precomputed.</p>
+<p>Some is evaluated per pixel.</p>
+<p>Some is evaluated once per frame.</p>
+<p>Some is pushed into Godot’s renderer as lighting state.</p>
+<p>The architecture is largely about keeping those responsibilities separate.</p>
+<hr/>
+<h2 id="the-fundamental-rendering-problem">The Fundamental Rendering Problem</h2>
+<p>A useful way to think about atmospheric rendering is to stop thinking about “sky colour” and start thinking about <strong>light transport through a participating medium</strong>.</p>
+<p>For a point along a camera ray, sunlight can be scattered toward the camera. The amount that arrives depends on:</p>
+<ol>
+<li>The density of atmosphere along the sun-to-sample path.</li>
+<li>The scattering coefficient of the participating medium.</li>
+<li>The phase function describing the angular distribution of scattered light.</li>
+<li>The density along the sample-to-camera path.</li>
+<li>Any additional absorption, such as ozone.</li>
+<li>Contributions from subsequent scattering events.</li>
+</ol>
+<p>A conceptual single-scattering term can therefore be thought of as:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>L</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo><mo>≈</mo><mo>∫</mo><msub><mi>T</mi><mtext>view</mtext></msub><mtext>  </mtext><mi>β</mi><mtext>  </mtext><mi>P</mi><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo><mtext>  </mtext><msub><mi>T</mi><mtext>sun</mtext></msub><mtext>  </mtext><msub><mi>L</mi><mo lspace="0em" rspace="0em">⊙</mo></msub><mtext>  </mtext><mi>d</mi><mi>s</mi></mrow><annotation encoding="application/x-tex">L_{1}(v)
+\approx
+\int
+T_{\text{view}}
+\;
+\beta
+\;
+P(\theta)
+\;
+T_{\text{sun}}
+\;
+L_{\odot}
+\;
+ds</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathnormal">L</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0359em">v</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:2.2222em;vertical-align:-0.8622em"></span><span class="mop op-symbol large-op" style="margin-right:0.4445em;position:relative;top:-0.0011em">∫</span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3175em"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">view</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em"></span><span class="mord mathnormal" style="margin-right:0.0528em">β</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mord mathnormal" style="margin-right:0.1389em">P</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0278em">θ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">sun</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em"></span><span class="mord"><span class="mord mathnormal">L</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2583em"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">⊙</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">s</span></span></span></span></span>
+<p>The problem is not expressing this mathematically.</p>
+<p>The problem is evaluating it cheaply enough to use in a real-time renderer.</p>
+<p>A naive implementation would repeatedly ray-march the atmosphere for every pixel, and then perform additional integration for the sun path. That becomes expensive very quickly.</p>
+<p>The central strategy of this project is therefore:</p>
+<blockquote>
+<p><strong>Do expensive, reusable integration ahead of time whenever the quantity can be parameterized into a lookup table; reserve per-pixel work for the information that actually depends on the current camera and scene.</strong></p>
+</blockquote>
+<p>This is why the project is built around LUTs.</p>
+<hr/>
+<h2 id="precomputation-is-the-backbone">Precomputation Is the Backbone</h2>
+<p>Three lookup tables form the core of the scattering pipeline.</p>
+<h3 id="transmittance-lut">Transmittance LUT</h3>
+<p>The transmittance LUT answers a deceptively important question:</p>
+<blockquote>
+<p>How much light survives from a point in the atmosphere along a particular direction?</p>
+</blockquote>
+<p>The implementation stores this as a 2D function of observer radius and view zenith angle. The current implementation uses a 256 × 64 texture in the high-quality configuration.</p>
+<p>Its job is to make repeated optical-depth queries cheap.</p>
+<p>Instead of performing another 64-step atmospheric integration at runtime, a shader can perform a texture lookup.</p>
+<p>The underlying implementation uses spherical ray/sphere intersection, altitude-dependent Rayleigh/Mie/ozone density, numerical integration, and Beer’s law. A CPU reference implementation mirrors the GPU algorithm so that the numerical result can be tested before the compute shader is trusted.</p>
+<h3 id="multiple-scattering-lut">Multiple-Scattering LUT</h3>
+<p>Single scattering is not enough to produce convincing atmospheric brightness.</p>
+<p>It becomes noticeably weak:</p>
+<ul>
+<li>around the anti-solar region,</li>
+<li>around long horizon paths,</li>
+<li>and during twilight.</li>
+</ul>
+<p>The multiple-scattering pass therefore approximates the light that survives additional scattering events and feeds that contribution back into the sky model.</p>
+<p>This is intentionally an approximation rather than a literal infinite scattering simulation. The goal is to recover the broad radiometric behaviour that single scattering misses without turning the sky shader into an unbounded integration problem.</p>
+<p>The implementation also demonstrates one of the recurring themes of this project: GPU mathematics and GPU resource layout are equally important. The shader-side <code>std140</code> structure must be matched byte-for-byte by the CPU-side buffer packing, including alignment and final struct size. The implementation survived several failures caused by buffers being short by exactly the amount implied by implicit <code>vec3</code> alignment.</p>
+<h3 id="sky-view-lut">Sky-View LUT</h3>
+<p>The sky-view LUT moves the expensive sky-ray integration out of the final per-pixel path.</p>
+<p>Conceptually, it caches atmospheric radiance as a function of view direction and atmospheric state. At runtime the sky shader primarily performs a lookup rather than re-running the full integration for every screen pixel.</p>
+<p>That becomes especially important once the atmosphere is no longer the only thing the sky shader needs to draw. The same shader eventually composites celestial and procedural layers, cloud visibility, sun and moon disks, and other effects.</p>
+<p>The sky-view LUT therefore changes the architecture from:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>Every pixel:</span></span>
+<span class="line"><span>    ray march atmosphere</span></span>
+<span class="line"><span>    → integrate scattering</span></span>
+<span class="line"><span>    → produce sky</span></span></code></pre>
+<p>to:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>GPU precomputation:</span></span>
+<span class="line"><span>    integrate atmosphere</span></span>
+<span class="line"><span>    → store directional radiance</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Every pixel:</span></span>
+<span class="line"><span>    sample sky-view LUT</span></span>
+<span class="line"><span>    → composite other layers</span></span></code></pre>
+<p>This separation is one of the most important architectural decisions in the entire renderer.</p>
+<hr/>
+<h2 id="the-gpu-foundation-renderingdevice-and-compute">The GPU Foundation: RenderingDevice and Compute</h2>
+<p>The LUTs only become useful if there is reliable infrastructure to generate them.</p>
+<p>For this project, that means working below the normal material abstraction and using Godot 4.5’s <code>RenderingDevice</code> API for compute work.</p>
+<p>The compute path is intentionally reusable:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    GLSL[&#34;GLSL source&#34;] --> IMPORT[&#34;Godot shader import&#34;]
+    IMPORT --> RDSF[&#34;RDShaderFile&#34;]
+    RDSF --> SPV[&#34;SPIR-V&#34;]
+    SPV --> RID[&#34;RenderingDevice shader RID&#34;]
+    RID --> PIPE[&#34;Compute pipeline&#34;]
+    PIPE --> USET[&#34;Uniform set&#34;]
+    USET --> DISPATCH[&#34;Compute dispatch&#34;]
+    DISPATCH --> TEX[&#34;GPU texture&#34;]
+    TEX --> T2D[&#34;Texture2DRD&#34;]
+    T2D --> SKY[&#34;Sky shader / renderer&#34;]">flowchart TB
+    GLSL[&quot;GLSL source&quot;] --&gt; IMPORT[&quot;Godot shader import&quot;]
+    IMPORT --&gt; RDSF[&quot;RDShaderFile&quot;]
+    RDSF --&gt; SPV[&quot;SPIR-V&quot;]
+    SPV --&gt; RID[&quot;RenderingDevice shader RID&quot;]
+    RID --&gt; PIPE[&quot;Compute pipeline&quot;]
+    PIPE --&gt; USET[&quot;Uniform set&quot;]
+    USET --&gt; DISPATCH[&quot;Compute dispatch&quot;]
+    DISPATCH --&gt; TEX[&quot;GPU texture&quot;]
+    TEX --&gt; T2D[&quot;Texture2DRD&quot;]
+    T2D --&gt; SKY[&quot;Sky shader / renderer&quot;]</pre></div>
+<p>The infrastructure separates:</p>
+<ul>
+<li><code>RenderingDevice</code> acquisition,</li>
+<li>shader/pipeline creation,</li>
+<li>GPU texture allocation,</li>
+<li>buffer management,</li>
+<li>uniform-set lifetime,</li>
+<li>dispatch sizing,</li>
+<li>cleanup and ownership.</li>
+</ul>
+<p>That abstraction exists because every LUT follows roughly the same mechanical sequence: create or reuse a GPU texture, bind the parameters, dispatch the compute shader, and expose the resulting texture to the renderer.</p>
+<p>There is an important distinction between the <strong>main RenderingDevice</strong> and a <strong>local RenderingDevice</strong>. The main device is the one that shares the renderer’s GPU context and therefore produces resources that can be consumed by <code>Texture2DRD</code>. Local devices are useful for deterministic testing because they support explicit submission, synchronization, and readback. They are separate Vulkan contexts, so their resources cannot simply be handed to the main renderer.</p>
+<p>This dual-device model becomes part of the testing strategy rather than an implementation detail.</p>
+<p>The renderer path proves that resources can be consumed by Godot.</p>
+<p>The local-device path proves that the compute result is numerically correct.</p>
+<hr/>
+<h2 id="cpu-reference-first-gpu-second">CPU Reference First, GPU Second</h2>
+<p>One of the strongest patterns that emerged across the implementation is:</p>
+<blockquote>
+<p><strong>Build a CPU reference implementation before trusting the GPU implementation.</strong></p>
+</blockquote>
+<p>This is especially useful for atmospheric mathematics because GPU failures are often ambiguous.</p>
+<p>If a LUT is black, the problem could be:</p>
+<ul>
+<li>the equation,</li>
+<li>the ray/sphere intersection,</li>
+<li>a density function,</li>
+<li>a bad coefficient,</li>
+<li>a wrong uniform,</li>
+<li>a misaligned buffer,</li>
+<li>a bad texture format,</li>
+<li>a broken uniform set,</li>
+<li>a dispatch size,</li>
+<li>or a shader compilation/binding problem.</li>
+</ul>
+<p>A CPU implementation narrows that search dramatically.</p>
+<p>For the transmittance LUT, the reference implementation handles ray/sphere intersections, ground hits, atmospheric exit conditions, density evaluation, numerical integration, and Beer’s law. The GPU shader mirrors that algorithm rather than becoming an independent implementation with subtly different mathematics.</p>
+<p>That pattern repeats because it works:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    PM[&#34;Physical model&#34;] --> CPU[&#34;CPU reference&#34;]
+    CPU --> UT[&#34;Unit tests / sanity checks&#34;]
+    UT --> GT[&#34;GPU translation&#34;]
+    GT --> GV[&#34;GPU validation&#34;]
+    GV --> RI[&#34;Renderer integration&#34;]">flowchart TB
+    PM[&quot;Physical model&quot;] --&gt; CPU[&quot;CPU reference&quot;]
+    CPU --&gt; UT[&quot;Unit tests / sanity checks&quot;]
+    UT --&gt; GT[&quot;GPU translation&quot;]
+    GT --&gt; GV[&quot;GPU validation&quot;]
+    GV --&gt; RI[&quot;Renderer integration&quot;]</pre></div>
+<p>It is not the shortest path to a screenshot.</p>
+<p>It is the shortest path to knowing why the screenshot is wrong.</p>
+<hr/>
+<h2 id="the-custom-sky-shader">The Custom Sky Shader</h2>
+<p>Eventually all of the precomputation has to become pixels.</p>
+<p>Godot’s <code>shader_type sky</code> is the final atmospheric composition stage. The shader samples the precomputed atmosphere data and combines it with scene-independent procedural layers.</p>
+<p>The basic pipeline is approximately:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    STATE[&#34;Sun / Moon / Camera State&#34;] --> SVS[&#34;Sky-view sampling&#34;]
+    SVS --> AR[&#34;Atmospheric radiance&#34;]
+    AR --> SD[&#34;Sun Disk&#34;]
+    AR --> CO[&#34;Clouds Occlusion&#34;]
+    AR --> NL[&#34;Night Layers&#34;]
+    SD --> FIN[&#34;Final sky&#34;]
+    CO --> FIN
+    NL --> FIN">flowchart TB
+    STATE[&quot;Sun / Moon / Camera State&quot;] --&gt; SVS[&quot;Sky-view sampling&quot;]
+    SVS --&gt; AR[&quot;Atmospheric radiance&quot;]
+    AR --&gt; SD[&quot;Sun Disk&quot;]
+    AR --&gt; CO[&quot;Clouds Occlusion&quot;]
+    AR --&gt; NL[&quot;Night Layers&quot;]
+    SD --&gt; FIN[&quot;Final sky&quot;]
+    CO --&gt; FIN
+    NL --&gt; FIN</pre></div>
+<p>The sky shader is deliberately not a monolithic implementation of every possible feature.</p>
+<p>Instead, procedural layers are isolated into shader includes:</p>
+<ul>
+<li>stars,</li>
+<li>moon,</li>
+<li>Milky Way,</li>
+<li>nebulae,</li>
+<li>aurora,</li>
+<li>clouds,</li>
+<li>and shared helper functions.</li>
+</ul>
+<p>The night-sky implementation is a good example of this separation. Five independent layers share common fade and cloud-occlusion logic while remaining individually controllable, and none of the layers trigger atmospheric LUT regeneration because they are frame-dynamic rather than part of the precomputed scattering state.</p>
+<p>This allows expensive atmospheric state and cheap visual state to evolve on different schedules.</p>
+<hr/>
+<h2 id="celestial-rendering-is-part-of-the-same-system">Celestial Rendering Is Part of the Same System</h2>
+<p>The atmosphere is driven by a celestial state rather than an arbitrary fixed light direction.</p>
+<p>That state feeds several consumers:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    CSTATE[&#34;Celestial State&#34;]
+    CSTATE --> SSH[&#34;Sky Shader&#34;]
+    CSTATE --> DL[&#34;Directional Light&#34;]
+    CSTATE --> NS[&#34;Night Systems&#34;]
+    SSH --> SB[&#34;Scattering basis&#34;]
+    DL --> SI[&#34;Sun illumination&#34;]
+    NS --> NM[&#34;Moon / stars / Milky Way / etc.&#34;]">flowchart TB
+    CSTATE[&quot;Celestial State&quot;]
+    CSTATE --&gt; SSH[&quot;Sky Shader&quot;]
+    CSTATE --&gt; DL[&quot;Directional Light&quot;]
+    CSTATE --&gt; NS[&quot;Night Systems&quot;]
+    SSH --&gt; SB[&quot;Scattering basis&quot;]
+    DL --&gt; SI[&quot;Sun illumination&quot;]
+    NS --&gt; NM[&quot;Moon / stars / Milky Way / etc.&quot;]</pre></div>
+<p>The important part is coherence.</p>
+<p>If the visible sun moves in one direction while the <code>DirectionalLight3D</code> still lights the world from yesterday’s direction, the renderer is technically functional and visually wrong.</p>
+<p>The cloud refactor exposed exactly this class of bug: user-provided sun lights must be synchronized from the live celestial direction every frame so that scene shadows remain aligned with the visible sun.</p>
+<p>The atmosphere therefore treats celestial state as shared rendering state, not just something used to place a sun disk in the sky.</p>
+<hr/>
+<h2 id="clouds-from-occlusion-to-a-volume">Clouds: From Occlusion to a Volume</h2>
+<p>The first cloud interface was intentionally simple.</p>
+<p>The atmosphere only needed a way to ask:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>&quot;How much of this direction is blocked by clouds?&quot;</span></span></code></pre>
+<p>That abstraction was important because the atmosphere addon should not depend on the game’s concrete cloud or weather implementation.</p>
+<p>The interface evolved from a global coverage value toward direction-resolved sampling:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="gdscript"><code><span class="line"><span style="color:#B392F0">sample</span><span style="color:#E1E4E8">(direction: </span><span style="color:#B392F0">Vector3</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">-&gt;</span><span style="color:#B392F0"> float</span></span></code></pre>
+<p>The sky shader can then use a single cloud visibility value to affect several independent systems without any of those systems knowing what generated the cloud data.</p>
+<p>For example:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart LR
+    CV[&#34;cloud_vis&#34;] --> SVW[&#34;atmosphere / sky-view contribution&#34;]
+    CV --> SUND[&#34;sun disk&#34;]
+    CV --> STAR[&#34;stars&#34;]
+    CV --> MOON[&#34;moon&#34;]
+    CV --> MW[&#34;Milky Way&#34;]
+    CV --> NEBU[&#34;nebulae&#34;]
+    CV --> AUR[&#34;aurora&#34;]">flowchart LR
+    CV[&quot;cloud_vis&quot;] --&gt; SVW[&quot;atmosphere / sky-view contribution&quot;]
+    CV --&gt; SUND[&quot;sun disk&quot;]
+    CV --&gt; STAR[&quot;stars&quot;]
+    CV --&gt; MOON[&quot;moon&quot;]
+    CV --&gt; MW[&quot;Milky Way&quot;]
+    CV --&gt; NEBU[&quot;nebulae&quot;]
+    CV --&gt; AUR[&quot;aurora&quot;]</pre></div>
+<p>This is a small design decision with a large consequence: <strong>clouds become a rendering input rather than a dependency shared by every feature.</strong> The cloud implementation can change without rewriting the night-sky system.</p>
+<h3 id="the-cloud-revamp">The Cloud Revamp</h3>
+<p>The later cloud refactor goes substantially further.</p>
+<p>The legacy representation treated clouds essentially as a projected 2D pattern. The revamp treats a cloud as a <strong>3D density field</strong>:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>ρ</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mrow><mi mathvariant="normal">f</mi><mi mathvariant="normal">B</mi><mi mathvariant="normal">m</mi></mrow><mo stretchy="false">(</mo><mrow><mi mathvariant="normal">w</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">p</mi></mrow><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo><mo>⋅</mo><mi>P</mi><mo stretchy="false">(</mo><mi>h</mi><mo stretchy="false">)</mo><mo>⋅</mo><mi>C</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\rho(x)
+=
+\mathrm{fBm}(\mathrm{warp}(x))
+\cdot P(h)
+\cdot C(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord mathnormal">ρ</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord"><span class="mord mathrm">fBm</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathrm">warp</span></span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">))</span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord mathnormal" style="margin-right:0.1389em">P</span><span class="mopen">(</span><span class="mord mathnormal">h</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em"></span><span class="mord mathnormal" style="margin-right:0.0715em">C</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span></span></span></span></span>
+<p>The density combines:</p>
+<ul>
+<li>domain-warped fractal noise,</li>
+<li>a vertical height profile,</li>
+<li>coverage,</li>
+<li>and a shell-space coordinate system.</li>
+</ul>
+<p>Lighting through the volume then follows Beer-Lambert transmittance:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>T</mi><mo>=</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>σ</mi><mi>D</mi></mrow></msup></mrow><annotation encoding="application/x-tex">T = e^{-\sigma D}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.1389em">T</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:0.8913em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913em"><span style="top:-3.113em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathnormal mtight" style="margin-right:0.0359em">σ</span><span class="mord mathnormal mtight" style="margin-right:0.0278em">D</span></span></span></span></span></span></span></span></span></span></span></span></span>
+<p>and the cloud can sample toward the sun to obtain self-shadowing and the characteristic bright rims and darker interiors of lit volumetric clouds.</p>
+<p>The performance problem becomes obvious when shadows are computed naively per screen pixel:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>screen pixels</span></span>
+<span class="line"><span> × view-ray steps</span></span>
+<span class="line"><span> × shadow-ray samples</span></span>
+<span class="line"><span> × noise evaluations</span></span></code></pre>
+<p>The refactor instead observes that a ground shadow mainly needs the <strong>vertical optical depth through the cloud column</strong>. That makes the shadow representation fundamentally 2D.</p>
+<p>The resulting 256 × 256 R16F camera-relative shadow map reduces the problem from billions of per-frame noise evaluations to roughly a million density evaluations for the complete map, while making shadow cost independent of output resolution.</p>
+<p>That is the kind of approximation this series is interested in: not “physically perfect at any cost,” but <strong>choose an approximation that preserves the perceptually important quantity</strong>.</p>
+<hr/>
+<h2 id="aerial-perspective-the-atmosphere-leaves-the-sky">Aerial Perspective: The Atmosphere Leaves the Sky</h2>
+<p>A sky can look correct while the world still looks completely detached from it.</p>
+<p>Aerial perspective closes that gap.</p>
+<p>Instead of computing atmospheric scattering only for sky pixels, the renderer can take the scene’s depth buffer, reconstruct the world-space position of the visible surface, and evaluate atmospheric extinction along the camera-to-surface segment.</p>
+<p>The resulting pipeline is:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    SCD[&#34;Scene Color + Depth&#34;] --> WPR[&#34;World Position Reconstruction&#34;]
+    WPR --> SEG[&#34;Camera to Surface Segment&#34;]
+    SEG --> AOD[&#34;Atmospheric Optical Depth&#34;]
+    AOD --> TRAN[&#34;Transmittance T&#34;]
+    AOD --> INSC[&#34;In-Scattered Light S&#34;]
+    TRAN --> COMP[&#34;color x T + S x (1 - T)&#34;]
+    INSC --> COMP">flowchart TB
+    SCD[&quot;Scene Color + Depth&quot;] --&gt; WPR[&quot;World Position Reconstruction&quot;]
+    WPR --&gt; SEG[&quot;Camera to Surface Segment&quot;]
+    SEG --&gt; AOD[&quot;Atmospheric Optical Depth&quot;]
+    AOD --&gt; TRAN[&quot;Transmittance T&quot;]
+    AOD --&gt; INSC[&quot;In-Scattered Light S&quot;]
+    TRAN --&gt; COMP[&quot;color x T + S x (1 - T)&quot;]
+    INSC --&gt; COMP</pre></div>
+<p>The implementation uses a <code>CompositorEffect</code>, reads resolved color/depth buffers, reconstructs world positions using the inverse projection and camera transform, computes segment optical depth, samples sky-view information for in-scattering, and composites directly into the resolved color buffer.</p>
+<p>This stage is where the renderer starts behaving like a complete atmospheric system rather than simply a skybox replacement.</p>
+<hr/>
+<h2 id="lighting-integration-the-sky-has-to-illuminate-the-world">Lighting Integration: The Sky Has to Illuminate the World</h2>
+<p>The renderer eventually needs to communicate atmospheric lighting to the rest of the scene.</p>
+<p>The target is not a second independent lighting model.</p>
+<p>The target is to derive a useful approximation from the same atmospheric state that produced the sky:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    SD[&#34;Sun Direction&#34;] --> AI[&#34;Atmospheric Irradiance&#34;]
+    AI --> AL[&#34;Ambient Light&#34;]
+    AI --> ST[&#34;Sun Transmittance&#34;]
+    AL --> ENV[&#34;Godot Environment&#34;]
+    ST --> DLIGHT[&#34;DirectionalLight3D&#34;]">flowchart TB
+    SD[&quot;Sun Direction&quot;] --&gt; AI[&quot;Atmospheric Irradiance&quot;]
+    AI --&gt; AL[&quot;Ambient Light&quot;]
+    AI --&gt; ST[&quot;Sun Transmittance&quot;]
+    AL --&gt; ENV[&quot;Godot Environment&quot;]
+    ST --&gt; DLIGHT[&quot;DirectionalLight3D&quot;]</pre></div>
+<p>The first implementation evaluated a hemisphere integral on the CPU. It was mathematically defensible and computationally disastrous in GDScript.</p>
+<p>The replacement uses a closed-form, column-integrated approximation based on atmospheric scale heights, phase averages, and solar transmittance. The resulting ambient evaluation drops from roughly 120 ms to below 0.01 ms in the documented implementation.</p>
+<p>This is another recurring theme:</p>
+<blockquote>
+<p><strong>A physically motivated renderer still needs approximations chosen for the execution model of the engine.</strong></p>
+</blockquote>
+<p>A correct equation implemented in the wrong place can be less useful than a well-chosen approximation that respects the frame budget.</p>
+<hr/>
+<h2 id="runtime-weather-without-coupling-the-addon-to-the-game">Runtime Weather Without Coupling the Addon to the Game</h2>
+<p>A reusable atmosphere system cannot assume it owns the game’s weather system.</p>
+<p>The addon should not import:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>WorldData</span></span>
+<span class="line"><span>WeatherSystem</span></span>
+<span class="line"><span>SeasonSystem</span></span>
+<span class="line"><span>GameCloudSystem</span></span></code></pre>
+<p>Instead, the game provides information through narrow interfaces.</p>
+<p>The weather provider exposes a small set of atmospheric inputs, while the atmosphere system remains responsible for deciding how those values affect the renderer.</p>
+<p>This gives a clean boundary:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    GAME[&#34;Game&#34;] --> WEATHER[&#34;Weather System&#34;]
+    WEATHER --> ADAPTER[&#34;Game-specific adapter&#34;]
+    ADAPTER --> PROVIDER[&#34;AtmosphereWeatherProvider&#34;]
+    PROVIDER --> RSTATE[&#34;RuntimeAtmosphereState&#34;]
+    RSTATE --> SHADER[&#34;Shader parameters&#34;]
+    RSTATE --> CPARAM[&#34;Cloud parameters&#34;]
+    RSTATE --> LDIRTY[&#34;LUT dirty-state&#34;]">flowchart TB
+    GAME[&quot;Game&quot;] --&gt; WEATHER[&quot;Weather System&quot;]
+    WEATHER --&gt; ADAPTER[&quot;Game-specific adapter&quot;]
+    ADAPTER --&gt; PROVIDER[&quot;AtmosphereWeatherProvider&quot;]
+    PROVIDER --&gt; RSTATE[&quot;RuntimeAtmosphereState&quot;]
+    RSTATE --&gt; SHADER[&quot;Shader parameters&quot;]
+    RSTATE --&gt; CPARAM[&quot;Cloud parameters&quot;]
+    RSTATE --&gt; LDIRTY[&quot;LUT dirty-state&quot;]</pre></div>
+<p>The important distinction is between <strong>configuration</strong> and <strong>runtime state</strong>.</p>
+<p>Shared <code>.tres</code> profile Resources represent authoring configuration.</p>
+<p>Runtime weather overrides live in separate state.</p>
+<p>The runtime system never needs to mutate the artist’s base profile just because humidity changed for thirty seconds.</p>
+<p>This pattern also makes dirty tracking possible: parameters that affect static or precomputed data can request LUT regeneration, while frame-dynamic parameters can remain cheap uniform updates.</p>
+<hr/>
+<h2 id="profiles-presets-and-the-public-api">Profiles, Presets, and the Public API</h2>
+<p>The rendering code is only one half of the system.</p>
+<p>The other half is the API that exposes it to a Godot project.</p>
+<p>The core configuration is composed from Resources with distinct responsibilities:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    SYS[&#34;AtmosphereSystem&#34;]
+    SYS --> AP[&#34;AtmosphereProfile&#34;]
+    AP --> RAY[&#34;Rayleigh / Mie / Ozone&#34;]
+    SYS --> PP[&#34;PlanetProfile&#34;]
+    PP --> GEO[&#34;Radius / atmosphere geometry&#34;]
+    SYS --> CEP[&#34;CelestialProfile&#34;]
+    CEP --> CEL[&#34;Sun / moon / celestial parameters&#34;]
+    SYS --> REN[&#34;RenderingProfile&#34;]
+    REN --> QUAL[&#34;Quality / feature toggles / resolutions&#34;]">flowchart TB
+    SYS[&quot;AtmosphereSystem&quot;]
+    SYS --&gt; AP[&quot;AtmosphereProfile&quot;]
+    AP --&gt; RAY[&quot;Rayleigh / Mie / Ozone&quot;]
+    SYS --&gt; PP[&quot;PlanetProfile&quot;]
+    PP --&gt; GEO[&quot;Radius / atmosphere geometry&quot;]
+    SYS --&gt; CEP[&quot;CelestialProfile&quot;]
+    CEP --&gt; CEL[&quot;Sun / moon / celestial parameters&quot;]
+    SYS --&gt; REN[&quot;RenderingProfile&quot;]
+    REN --&gt; QUAL[&quot;Quality / feature toggles / resolutions&quot;]</pre></div>
+<p>A preset can then bundle these resources and apply them together.</p>
+<p>This is intentionally more granular than a single settings object.</p>
+<p>It allows the system to validate individual domains, swap configurations, expose meaningful Inspector groups, and apply quality policies centrally.</p>
+<p>The implementation also uses small provider interfaces for systems that must remain decoupled, such as clouds and weather. The overall data flow is designed so that an Inspector change, a preset assignment, or a runtime override eventually converges on the same shader-parameter and LUT-generation pathways rather than creating separate “editor” and “runtime” implementations.</p>
+<hr/>
+<h2 id="quality-tiers-are-scheduling-policies">Quality Tiers Are Scheduling Policies</h2>
+<p>A quality setting is not just “more samples.”</p>
+<p>For this renderer it controls things such as LUT resolution and therefore changes where computation happens and how often it happens.</p>
+<p>That gives a useful distinction:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart LR
+    HQ[&#34;High quality&#34;] --> HQ_CACHE[&#34;more cached information&#34;]
+    HQ --> HQ_LUT[&#34;larger LUTs&#34;]
+    HQ --> HQ_COST[&#34;higher memory / generation cost&#34;]
+    HQ --> HQ_ERR[&#34;lower per-pixel approximation error&#34;]
+
+    LQ[&#34;Lower quality&#34;] --> LQ_LUT[&#34;smaller LUTs&#34;]
+    LQ --> LQ_SPEED[&#34;faster generation&#34;]
+    LQ --> LQ_MEM[&#34;lower memory&#34;]
+    LQ --> LQ_ERR[&#34;greater approximation&#34;]">flowchart LR
+    HQ[&quot;High quality&quot;] --&gt; HQ_CACHE[&quot;more cached information&quot;]
+    HQ --&gt; HQ_LUT[&quot;larger LUTs&quot;]
+    HQ --&gt; HQ_COST[&quot;higher memory / generation cost&quot;]
+    HQ --&gt; HQ_ERR[&quot;lower per-pixel approximation error&quot;]
+
+    LQ[&quot;Lower quality&quot;] --&gt; LQ_LUT[&quot;smaller LUTs&quot;]
+    LQ --&gt; LQ_SPEED[&quot;faster generation&quot;]
+    LQ --&gt; LQ_MEM[&quot;lower memory&quot;]
+    LQ --&gt; LQ_ERR[&quot;greater approximation&quot;]</pre></div>
+<p>The quality system therefore sits above the individual LUT implementations rather than being hard-coded inside each shader.</p>
+<p>This is important for maintainability. The transmittance shader should know how to generate transmittance. It should not need to know what “Medium” means for the entire addon.</p>
+<hr/>
+<h2 id="editor-preview-is-a-rendering-mode-not-a-separate-renderer">Editor Preview Is a Rendering Mode, Not a Separate Renderer</h2>
+<p>An artist-facing atmosphere system should not require launching the game every time a parameter changes.</p>
+<p>The editor preview turns the addon into a live <code>@tool</code> system:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    IC[&#34;Inspector change&#34;] --> SET[&#34;AtmosphereSystem setter / state change&#34;]
+    SET --> DIRTY[&#34;Dirty detection&#34;]
+    DIRTY --> REBUILD[&#34;Rebuild LUTs when required&#34;]
+    DIRTY --> PUSHDYN[&#34;Push dynamic shader parameters&#34;]
+    DIRTY --> UPDCEL[&#34;Update celestial state&#34;]
+    DIRTY --> UPDAMB[&#34;Update ambient integration&#34;]
+    REBUILD --> VIEWPORT[&#34;Editor viewport&#34;]
+    PUSHDYN --> VIEWPORT
+    UPDCEL --> VIEWPORT
+    UPDAMB --> VIEWPORT">flowchart TB
+    IC[&quot;Inspector change&quot;] --&gt; SET[&quot;AtmosphereSystem setter / state change&quot;]
+    SET --&gt; DIRTY[&quot;Dirty detection&quot;]
+    DIRTY --&gt; REBUILD[&quot;Rebuild LUTs when required&quot;]
+    DIRTY --&gt; PUSHDYN[&quot;Push dynamic shader parameters&quot;]
+    DIRTY --&gt; UPDCEL[&quot;Update celestial state&quot;]
+    DIRTY --&gt; UPDAMB[&quot;Update ambient integration&quot;]
+    REBUILD --&gt; VIEWPORT[&quot;Editor viewport&quot;]
+    PUSHDYN --&gt; VIEWPORT
+    UPDCEL --&gt; VIEWPORT
+    UPDAMB --&gt; VIEWPORT</pre></div>
+<p>But editor execution introduces a different lifecycle.</p>
+<p>The system must distinguish:</p>
+<ul>
+<li>scene deserialization,</li>
+<li>node readiness,</li>
+<li>user interaction,</li>
+<li>preview initialization,</li>
+<li>preview teardown,</li>
+<li>and normal runtime exit.</li>
+</ul>
+<p>The implementation therefore snapshots the environment it mutates and restores it when preview ends. This prevents preview changes to <code>Environment</code>, camera, compositor state, and related resources from accidentally becoming saved scene state.</p>
+<p>The preview path uses the same main-device compute infrastructure as the game renderer rather than creating a second rendering backend.</p>
+<p>That is a recurring architectural goal throughout the project:</p>
+<blockquote>
+<p><strong>Do not build two systems when one system can operate in two modes.</strong></p>
+</blockquote>
+<hr/>
+<h2 id="the-custom-inspector-is-the-last-10-that-makes-the-system-usable">The Custom Inspector Is the Last 10% That Makes the System Usable</h2>
+<p>Once there are dozens of parameters, a technically elegant API can still be painful to use.</p>
+<p>The custom inspector exists to expose the architecture rather than hide it.</p>
+<p>It provides:</p>
+<ul>
+<li>grouped configuration sections,</li>
+<li>quick presets,</li>
+<li>quality-tier selection,</li>
+<li>validation warnings,</li>
+<li>provider creation,</li>
+<li>and a clearer entry point into advanced settings.</li>
+</ul>
+<p>The implementation lives in an <code>EditorInspectorPlugin</code>, while testable section definitions and data logic remain outside the editor-only layer. This keeps the editor integration useful without making the core data model impossible to test headlessly.</p>
+<p>The distinction is important:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    CORE[&#34;Runtime/Core&#34;]
+    TEST[&#34;Testable Resources / State / Validation&#34;]
+    PRESENT[&#34;Editor Presentation&#34;]
+    INSPECTOR[&#34;Inspector&#34;]
+
+    CORE <--> TEST
+    TEST <--> PRESENT
+    PRESENT <--> INSPECTOR">flowchart TB
+    CORE[&quot;Runtime/Core&quot;]
+    TEST[&quot;Testable Resources / State / Validation&quot;]
+    PRESENT[&quot;Editor Presentation&quot;]
+    INSPECTOR[&quot;Inspector&quot;]
+
+    CORE &lt;--&gt; TEST
+    TEST &lt;--&gt; PRESENT
+    PRESENT &lt;--&gt; INSPECTOR</pre></div>
+<p>The Inspector is therefore a presentation layer over the same runtime API, not a second source of truth.</p>
+<hr/>
+<h2 id="planetary-scale-changes-the-assumptions">Planetary Scale Changes the Assumptions</h2>
+<p>One of the most useful things about the series is that the renderer did not stop at “looks good from sea level.”</p>
+<p>The initial sky-view parameterization covered the upper hemisphere.</p>
+<p>That is sufficient when the observer is standing on a planet.</p>
+<p>It is not sufficient when the observer is in orbit.</p>
+<p>Planetary mode therefore changes the problem in two ways:</p>
+<ol>
+<li>The sky-view LUT must cover the <strong>full sphere</strong>, including below-horizon directions when the observer is outside the atmosphere.</li>
+<li>Ray integration must account for whether the camera begins inside, intersects, or starts outside the atmospheric shell.</li>
+</ol>
+<p>The full-sphere mapping becomes:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>v</mi><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">l</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">e</mi></mrow><mo>+</mo><mi>π</mi><mi mathvariant="normal">/</mi><mn>2</mn></mrow><mi>π</mi></mfrac></mrow><annotation encoding="application/x-tex">v = \frac{\mathrm{altitude} + \pi/2}{\pi}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em"></span><span class="mord mathnormal" style="margin-right:0.0359em">v</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="base"><span class="strut" style="height:2.113em;vertical-align:-0.686em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em"><span style="top:-2.314em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em">π</span></span></span><span style="top:-3.23em"><span class="pstrut" style="height:3em"></span><span class="frac-line" style="border-bottom-width:0.04em"></span></span><span style="top:-3.677em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord"><span class="mord mathrm">altitude</span></span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em"></span><span class="mord mathnormal" style="margin-right:0.0359em">π</span><span class="mord">/2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span>
+<p>so that:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>v = 0.0  → nadir</span></span>
+<span class="line"><span>v = 0.5  → horizon</span></span>
+<span class="line"><span>v = 1.0  → zenith</span></span></code></pre>
+<p>The system also centralizes <code>observer_r</code> so that the camera’s altitude becomes shared state consumed by LUT generation, sky rendering, and related systems rather than being recomputed independently in several places.</p>
+<p>This stage demonstrates an important principle:</p>
+<blockquote>
+<p><strong>Planetary rendering is often less about adding new physics than removing hidden assumptions from existing physics.</strong></p>
+</blockquote>
+<hr/>
+<h2 id="coordinate-systems-are-a-first-class-rendering-problem">Coordinate Systems Are a First-Class Rendering Problem</h2>
+<p>Planetary-scale rendering exposes precision problems that do not appear in a small test scene.</p>
+<p>If the planet radius is approximately 6.37 million metres, then directly feeding absolute world positions into 32-bit floating-point shader calculations gives the GPU a poor numerical representation of the small differences that actually matter for cloud noise, shadows, and local ray marching.</p>
+<p>The cloud refactor therefore introduces coordinate virtualization:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    WORLD[&#34;Engine world position&#34;] --> REL[&#34;relative to camera / observer&#34;]
+    REL --> SMALL[&#34;small camera-relative coordinates&#34;]
+    SMALL --> GFX[&#34;GPU procedural math&#34;]">flowchart TB
+    WORLD[&quot;Engine world position&quot;] --&gt; REL[&quot;relative to camera / observer&quot;]
+    REL --&gt; SMALL[&quot;small camera-relative coordinates&quot;]
+    SMALL --&gt; GFX[&quot;GPU procedural math&quot;]</pre></div>
+<p>At the same time, the atmosphere keeps the observer’s <strong>radius from the planetary centre</strong> as an explicit scalar because that is what the spherical scattering model actually needs.</p>
+<p>This gives two different notions of position:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart LR
+    WORLD[&#34;World-space position&#34;] --> WORLD_USE[&#34;useful for scene integration&#34;]
+    CAMERA[&#34;Camera-relative position&#34;] --> CAMERA_USE[&#34;useful for local GPU numerical stability&#34;]
+    OBS[&#34;Observer radius&#34;] --> OBS_USE[&#34;useful for planetary atmospheric equations&#34;]">flowchart LR
+    WORLD[&quot;World-space position&quot;] --&gt; WORLD_USE[&quot;useful for scene integration&quot;]
+    CAMERA[&quot;Camera-relative position&quot;] --&gt; CAMERA_USE[&quot;useful for local GPU numerical stability&quot;]
+    OBS[&quot;Observer radius&quot;] --&gt; OBS_USE[&quot;useful for planetary atmospheric equations&quot;]</pre></div>
+<p>Conflating these three concepts was one of the sources of the most difficult cloud bugs in the refactor. Keeping them separate is part of the renderer’s correctness model now.</p>
+<hr/>
+<h2 id="performance-is-part-of-the-architecture">Performance Is Part of the Architecture</h2>
+<p>The renderer’s performance work came after the feature work, but the lessons change how the whole system should be understood.</p>
+<p>There are several fundamentally different classes of work:</p>
+<h3 id="static-or-infrequent">Static or Infrequent</h3>
+<p>Examples:</p>
+<ul>
+<li>LUT generation after structural parameter changes.</li>
+<li>Resource creation.</li>
+<li>Shader/pipeline setup.</li>
+<li>Preset application.</li>
+</ul>
+<p>These can be expensive because they should not happen every frame.</p>
+<h3 id="frame-dynamic">Frame Dynamic</h3>
+<p>Examples:</p>
+<ul>
+<li>sun direction,</li>
+<li>celestial animation,</li>
+<li>cloud coverage,</li>
+<li>weather values that only affect uniforms,</li>
+<li>night-sky animation.</li>
+</ul>
+<p>These need to avoid allocations and unnecessary GPU work.</p>
+<h3 id="per-pixel">Per Pixel</h3>
+<p>Examples:</p>
+<ul>
+<li>sky-view LUT sampling,</li>
+<li>cloud visibility,</li>
+<li>procedural night layers,</li>
+<li>final atmospheric compositing.</li>
+</ul>
+<p>These need to be extremely conscious of instruction count and texture bandwidth.</p>
+<p>The performance pass found several examples of work leaking into the wrong category:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>Dictionary creation every frame</span></span>
+<span class="line"><span>GPU uniform-set creation inside a render callback</span></span>
+<span class="line"><span>Redundant shader parameter uploads</span></span>
+<span class="line"><span>Cloud values baked into textures when they should remain dynamic</span></span>
+<span class="line"><span>LUT dirty-state checks allocating temporary dictionaries</span></span></code></pre>
+<p>The fixes were deliberately boring:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>reuse</span></span>
+<span class="line"><span>cache</span></span>
+<span class="line"><span>change-detect</span></span>
+<span class="line"><span>persist</span></span>
+<span class="line"><span>update in place</span></span></code></pre>
+<p>That is the point.</p>
+<p>The renderer already had the right high-level decomposition. Performance work was largely about respecting the intended lifetime of each piece of data. The documented performance pass reports zero per-frame Dictionary allocations in the hot path for unchanged weather values and persistent GPU resources for aerial perspective rather than create/destroy operations in the render callback.</p>
+<hr/>
+<h2 id="validation-the-renderer-is-not-finished-when-it-looks-good">Validation: The Renderer Is Not Finished When It Looks Good</h2>
+<p>A rendering system can produce beautiful screenshots while being architecturally broken.</p>
+<p>The final validation pass exists to catch the problems that visual testing misses:</p>
+<ul>
+<li>stale parameter caches,</li>
+<li>leaked or dead GPU resource tracking,</li>
+<li>incomplete parameter sets,</li>
+<li>incorrect lifecycle assumptions,</li>
+<li>broken presets,</li>
+<li>missing scene dependencies,</li>
+<li>and engine-level constraints that only appear at planetary distances.</li>
+</ul>
+<p>The current validation work includes unit tests for profiles, presets, LUT lifecycles, dirty state, aerial parameter completeness, and renderer safety, plus scene-level validation and regression runs across the previous phases.</p>
+<p>The documented Phase 24 suite contains 49 validation tests, while the full regression pass re-runs the earlier phase tests and separately verifies GPU-dependent work when a real <code>RenderingDevice</code> is available.</p>
+<p>The important distinction is between:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>&quot;Does this module work?&quot;</span></span></code></pre>
+<p>and:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>&quot;Can I initialize it twice, rebuild it, feed it different profiles,</span></span>
+<span class="line"><span>run it in the editor, move the camera into orbit, clean it up,</span></span>
+<span class="line"><span>and still trust the result?&quot;</span></span></code></pre>
+<p>The second question is what the validation phase is answering.</p>
+<hr/>
+<h2 id="the-series-roadmap">The Series Roadmap</h2>
+<p>The implementation drafts naturally fall into a few broad sections.</p>
+<p>This is the order in which the technical story makes the most sense, even when individual posts are published around the actual development timeline.</p>
+<h3 id="1-physical-and-rendering-foundations">1. Physical and Rendering Foundations</h3>
+<p>The early material establishes the physical model and the renderer’s vocabulary:</p>
+<ul>
+<li>atmospheric density models,</li>
+<li>Rayleigh scattering,</li>
+<li>Mie scattering and phase functions,</li>
+<li>ozone absorption,</li>
+<li>optical depth,</li>
+<li>wavelength-dependent coefficients,</li>
+<li>spherical ray geometry,</li>
+<li>celestial state,</li>
+<li>runtime state,</li>
+<li>and the separation between physical parameters and rendering controls.</li>
+</ul>
+<p>These posts explain <strong>what the renderer is trying to compute before discussing how Godot’s GPU APIs are used to compute it</strong>.</p>
+<h3 id="2-gpu-compute-infrastructure">2. GPU Compute Infrastructure</h3>
+<p>The next layer is the reusable RenderingDevice foundation.</p>
+<p>This covers:</p>
+<ul>
+<li>main versus local <code>RenderingDevice</code>,</li>
+<li>SPIR-V shader loading,</li>
+<li>compute pipelines,</li>
+<li>textures and buffers,</li>
+<li>uniform sets,</li>
+<li>resource ownership,</li>
+<li>dispatch sizing,</li>
+<li>synchronization,</li>
+<li>cleanup,</li>
+<li>and test infrastructure.</li>
+</ul>
+<p>This is the plumbing that makes the LUT work possible rather than part of the atmosphere model itself.</p>
+<h3 id="3-precomputed-atmospheric-lighting">3. Precomputed Atmospheric Lighting</h3>
+<p>The renderer then becomes a real GPU system through the LUT sequence:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    TRANS[&#34;Transmittance&#34;] --> MULTI[&#34;Multiple Scattering&#34;]
+    MULTI --> VIEW[&#34;Sky View&#34;]">flowchart TB
+    TRANS[&quot;Transmittance&quot;] --&gt; MULTI[&quot;Multiple Scattering&quot;]
+    MULTI --&gt; VIEW[&quot;Sky View&quot;]</pre></div>
+<p>The transmittance stage establishes spherical optical-depth integration.</p>
+<p>Multiple scattering restores the higher-order light contribution.</p>
+<p>Sky-view caching moves repeated sky integration out of the final pixel shader.</p>
+<p>Each post goes into the actual parameterization, integration strategy, GPU layout, resource lifecycle, and debugging failures rather than treating LUT generation as a black box. The transmittance implementation, for example, explicitly documents its UV mapping, CPU reference, GPU translation, edge cases, and lifecycle manager.</p>
+<h3 id="4-the-sky-renderer">4. The Sky Renderer</h3>
+<p>Once the LUTs exist, the custom <code>shader_type sky</code> stage connects them to the screen.</p>
+<p>This section covers:</p>
+<ul>
+<li>sky shader integration,</li>
+<li>transmittance sampling,</li>
+<li>sun disk rendering,</li>
+<li>sky-view sampling,</li>
+<li>Godot sky-shader restrictions,</li>
+<li>shader parameter injection,</li>
+<li>first-frame fallbacks,</li>
+<li>and the engine-specific mistakes that can leave an otherwise correct atmosphere completely black.</li>
+</ul>
+<p>This is the point where the renderer stops being a collection of compute passes and becomes visibly a sky.</p>
+<h3 id="5-the-night-sky">5. The Night Sky</h3>
+<p>The atmospheric background then becomes a composited environment rather than only scattering.</p>
+<p>The night-sky layer is split into:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>Stars</span></span>
+<span class="line"><span>Moon</span></span>
+<span class="line"><span>Milky Way</span></span>
+<span class="line"><span>Nebulae</span></span>
+<span class="line"><span>Aurora</span></span></code></pre>
+<p>Each is procedurally generated and independently controlled, but they share common fading and cloud-occlusion infrastructure.</p>
+<p>The intent is to keep these features <strong>frame dynamic</strong> and independent from the expensive LUT pipeline.</p>
+<h3 id="6-runtime-apis-and-integration">6. Runtime APIs and Integration</h3>
+<p>Once the renderer works visually, the system needs to become a reusable Godot component.</p>
+<p>This part covers:</p>
+<ul>
+<li>Resource-based configuration,</li>
+<li>presets,</li>
+<li>quality tiers,</li>
+<li>runtime state,</li>
+<li>weather providers,</li>
+<li>cloud providers,</li>
+<li>dirty-state propagation,</li>
+<li>shader parameter aggregation,</li>
+<li>and the boundaries between the addon and the host game.</li>
+</ul>
+<p>The key question becomes:</p>
+<blockquote>
+<p>How do I expose atmospheric state without forcing the renderer to know anything about the game that owns it?</p>
+</blockquote>
+<h3 id="7-clouds-and-scene-interaction">7. Clouds and Scene Interaction</h3>
+<p>The cloud work starts as an interface and procedural coverage layer, then develops into a substantially more advanced volumetric implementation.</p>
+<p>This section covers:</p>
+<ul>
+<li>direction-resolved cloud visibility,</li>
+<li>procedural fBm,</li>
+<li>domain warping,</li>
+<li>cloud shell coordinates,</li>
+<li>Beer-Lambert extinction,</li>
+<li>volumetric ray marching,</li>
+<li>self-shadowing,</li>
+<li>camera-relative coordinates,</li>
+<li>and the 2D optical-depth shadow-map approximation.</li>
+</ul>
+<p>The cloud refactor is especially useful as a case study in scaling a feature from “it visually works” into “it works at planetary coordinates without destroying the frame.”</p>
+<h3 id="8-aerial-perspective">8. Aerial Perspective</h3>
+<p>This is where the atmosphere interacts with ordinary scene geometry.</p>
+<p>The implementation covers:</p>
+<ul>
+<li>Godot <code>CompositorEffect</code>,</li>
+<li>resolved color/depth access,</li>
+<li>reversed-Z depth,</li>
+<li>view-space reconstruction,</li>
+<li>world-space reconstruction,</li>
+<li>atmospheric segment integration,</li>
+<li>sky-view based in-scattering,</li>
+<li>and final color compositing.</li>
+</ul>
+<p>This stage explains the interface between Godot’s normal scene renderer and a custom atmospheric compute pass.</p>
+<h3 id="9-ambient-and-lighting-integration">9. Ambient and Lighting Integration</h3>
+<p>The renderer then feeds useful atmospheric information back into the scene:</p>
+<ul>
+<li>diffuse ambient irradiance,</li>
+<li>environment lighting,</li>
+<li>sun transmittance,</li>
+<li>light colour,</li>
+<li>day/night response,</li>
+<li>and coherence between celestial state and scene lighting.</li>
+</ul>
+<p>The interesting part here is not just the lighting result, but the trade-off between numerical integration and a closed-form approximation suitable for runtime evaluation.</p>
+<h3 id="10-editor-tooling">10. Editor Tooling</h3>
+<p>The final implementation layer turns the renderer into an actual tool for technical artists and environment artists.</p>
+<p>This includes:</p>
+<ul>
+<li><code>@tool</code> execution,</li>
+<li>live viewport preview,</li>
+<li>environment snapshots,</li>
+<li>preview lifecycle management,</li>
+<li>custom Inspector sections,</li>
+<li>quick presets,</li>
+<li>validation warnings,</li>
+<li>and editor-safe resource handling.</li>
+</ul>
+<p>The same rendering backend is reused; the main difference is the lifecycle around it.</p>
+<h3 id="11-performance-and-production-hardening">11. Performance and Production Hardening</h3>
+<p>The production-oriented posts cover the work that tends to happen after a renderer already looks good:</p>
+<ul>
+<li>eliminating hot-path allocations,</li>
+<li>reusing GPU resources,</li>
+<li>caching uniform sets,</li>
+<li>reducing shader work,</li>
+<li>separating dynamic and rebuild-sensitive parameters,</li>
+<li>validating resource ownership,</li>
+<li>and making regeneration predictable.</li>
+</ul>
+<p>This is where the architecture gets measured against an actual frame budget.</p>
+<h3 id="12-planetary-mode-and-validation">12. Planetary Mode and Validation</h3>
+<p>The final stage expands the renderer’s assumptions from “surface sky” to “planet-scale renderer”:</p>
+<ul>
+<li>full-sphere sky-view parameterization,</li>
+<li>outside-atmosphere ray handling,</li>
+<li>observer altitude tracking,</li>
+<li>shared observer radius,</li>
+<li>camera-relative cloud coordinates,</li>
+<li>known Godot Forward+ limits,</li>
+<li>scene validation,</li>
+<li>regression testing,</li>
+<li>and final stabilization.</li>
+</ul>
+<p>The result is one <code>AtmosphereSystem</code> that can operate from a surface camera to orbital altitude, within the documented limitations of the engine and current cloud implementation.</p>
+<hr/>
+<h2 id="how-to-read-the-individual-posts">How to Read the Individual Posts</h2>
+<p>These posts are deliberately not written as beginner tutorials.</p>
+<p>They assume that the reader is comfortable with concepts such as:</p>
+<ul>
+<li>GPU pipelines,</li>
+<li>shader execution,</li>
+<li>vector and matrix mathematics,</li>
+<li>texture formats,</li>
+<li>ray marching,</li>
+<li>numerical integration,</li>
+<li>rendering passes,</li>
+<li>Godot Resources and nodes,</li>
+<li>and the basic distinction between CPU and GPU work.</li>
+</ul>
+<p>The intended reading style is closer to an engineering notebook than to a textbook.</p>
+<p>Some posts explain a completed design.</p>
+<p>Some are debugging stories.</p>
+<p>Some focus on a single subsystem.</p>
+<p>Some exist mainly because a particular failure taught something that would otherwise be very easy to forget.</p>
+<p>For example:</p>
+<p>A texture format mismatch can make a correct compositor silently write nothing.</p>
+<p>A single incorrect <code>std140</code> assumption can invalidate an entire uniform block.</p>
+<p>A ground intersection at exactly <code>t = 0</code> can make an apparently correct optical-depth calculation traverse the whole atmosphere.</p>
+<p>A camera near plane that is perfectly reasonable at game scale can become incompatible with planetary-scale Forward+ clustering.</p>
+<p>A mathematically correct lighting integral can still cost more than the entire frame budget when executed in GDScript.</p>
+<p>These are not side stories.</p>
+<p>They are part of the implementation.</p>
+<hr/>
+<h2 id="the-engineering-philosophy-behind-the-series">The Engineering Philosophy Behind the Series</h2>
+<p>There are a few principles that repeatedly appear across the project.</p>
+<h3 id="physical-motivation-not-physical-purism">Physical Motivation, Not Physical Purism</h3>
+<p>The renderer uses physically motivated quantities and relationships, but it does not pretend that every step is an exact reference implementation.</p>
+<p>The right question is often:</p>
+<blockquote>
+<p>“What physical quantity matters here, and what is the cheapest approximation that preserves the behaviour users will notice?”</p>
+</blockquote>
+<p>Multiple scattering is approximated.</p>
+<p>Ambient irradiance is approximated analytically.</p>
+<p>Cloud shadows are reduced to a 2D optical-depth field.</p>
+<p>Sky radiance is precomputed into LUTs instead of being integrated independently for every pixel.</p>
+<p>The goal is perceptual and physical plausibility within a real-time budget.</p>
+<h3 id="separate-state-by-lifetime">Separate State by Lifetime</h3>
+<p>Not all parameters deserve the same update frequency.</p>
+<p>A useful mental model is:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart LR
+    STRUCT[&#34;STRUCTURAL&#34;] --> STRUCT_ACT[&#34;rebuild resources / LUTs&#34;]
+    REBUILD[&#34;REBUILD-SENSITIVE&#34;] --> REBUILD_ACT[&#34;regenerate affected precomputed data&#34;]
+    FRAME[&#34;FRAME-DYNAMIC&#34;] --> FRAME_ACT[&#34;update uniforms&#34;]
+    PIXEL[&#34;PIXEL-DYNAMIC&#34;] --> PIXEL_ACT[&#34;evaluate in shader&#34;]">flowchart LR
+    STRUCT[&quot;STRUCTURAL&quot;] --&gt; STRUCT_ACT[&quot;rebuild resources / LUTs&quot;]
+    REBUILD[&quot;REBUILD-SENSITIVE&quot;] --&gt; REBUILD_ACT[&quot;regenerate affected precomputed data&quot;]
+    FRAME[&quot;FRAME-DYNAMIC&quot;] --&gt; FRAME_ACT[&quot;update uniforms&quot;]
+    PIXEL[&quot;PIXEL-DYNAMIC&quot;] --&gt; PIXEL_ACT[&quot;evaluate in shader&quot;]</pre></div>
+<p>Many performance bugs in the project came from treating one class like another.</p>
+<h3 id="let-interfaces-absorb-game-specific-knowledge">Let Interfaces Absorb Game-Specific Knowledge</h3>
+<p>The atmosphere should know how to interpret humidity.</p>
+<p>It should not know what a game’s weather system is called.</p>
+<p>It should know how to sample cloud visibility.</p>
+<p>It should not know how those clouds are generated.</p>
+<p>It should know how to update a <code>DirectionalLight3D</code>.</p>
+<p>It should not assume that it owns the project’s sun node.</p>
+<p>That separation is what makes the addon reusable.</p>
+<h3 id="make-failures-loud-at-the-boundary">Make Failures Loud at the Boundary</h3>
+<p>Rendering code has too many ways to fail silently.</p>
+<p>The implementation therefore deliberately validates:</p>
+<ul>
+<li>shader loading,</li>
+<li>SPIR-V compilation,</li>
+<li>GPU resource validity,</li>
+<li>texture formats,</li>
+<li>parameter completeness,</li>
+<li>profile validity,</li>
+<li>device availability,</li>
+<li>and cleanup state.</li>
+</ul>
+<p>A renderer that fails safely and tells you why is considerably more useful than one that simply produces a black frame.</p>
+<h3 id="test-the-math-before-the-beauty">Test the Math Before the Beauty</h3>
+<p>Screenshots are useful.</p>
+<p>They are not enough.</p>
+<p>The project treats numerical sanity checks, lifecycle tests, resource tests, and scene-level validation as part of rendering correctness.</p>
+<p>The goal is not simply to produce an image that looks right today.</p>
+<p>The goal is to have enough evidence that a refactor six months from now did not quietly change the physics, leak a GPU resource, or move a parameter into the wrong coordinate system.</p>
+<hr/>
+<h2 id="where-the-architecture-landed">Where the Architecture Landed</h2>
+<p>At the end of the implementation, the renderer can be understood as several layers rather than one enormous system:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    subgraph PROJECT[&#34;Godot Project / Game&#34;]
+        GAME[&#34;Weather / Game Data / Scene / Camera / DirectionalLight&#34;]
+    end
+
+    ADP[&#34;Adapter / Provider API&#34;]
+
+    subgraph SYSTEM[&#34;AtmosphereSystem&#34;]
+        CORE[&#34;Profiles · Runtime State · Celestial · Dirty Tracking&#34;]
+        META[&#34;Presets · Providers · Quality · Integration&#34;]
+    end
+
+    subgraph PRECOMPUTE[&#34;GPU Precompute&#34;]
+        PT[&#34;Transmittance LUT&#34;]
+        PM2[&#34;Multi-Scattering LUT&#34;]
+        PS[&#34;Sky-View LUT&#34;]
+        PSH[&#34;Cloud shadow map&#34;]
+    end
+
+    subgraph DYNAMIC[&#34;Frame Dynamic&#34;]
+        DCEL[&#34;Celestial state&#34;]
+        DWEATHER[&#34;Weather values&#34;]
+        DCLOUD[&#34;Cloud parameters&#34;]
+        DNIGHT[&#34;Night animation&#34;]
+    end
+
+    subgraph SKYBOX[&#34;Sky / Compositor&#34;]
+        SATM[&#34;Atmosphere&#34;]
+        SCEL[&#34;Celestials&#34;]
+        SCLOUD[&#34;Clouds&#34;]
+        SAP[&#34;Aerial Perspective&#34;]
+    end
+
+    OUT[&#34;Godot Frame Output&#34;]
+    APPEAR[&#34;Scene appearance&#34;]
+    LIGHT[&#34;Scene lighting&#34;]
+
+    PROJECT --> ADP
+    ADP --> SYSTEM
+    SYSTEM --> PRECOMPUTE
+    SYSTEM --> DYNAMIC
+    PRECOMPUTE --> SKYBOX
+    DYNAMIC --> SKYBOX
+    SKYBOX --> OUT
+    OUT --> APPEAR
+    OUT --> LIGHT">flowchart TB
+    subgraph PROJECT[&quot;Godot Project / Game&quot;]
+        GAME[&quot;Weather / Game Data / Scene / Camera / DirectionalLight&quot;]
+    end
+
+    ADP[&quot;Adapter / Provider API&quot;]
+
+    subgraph SYSTEM[&quot;AtmosphereSystem&quot;]
+        CORE[&quot;Profiles · Runtime State · Celestial · Dirty Tracking&quot;]
+        META[&quot;Presets · Providers · Quality · Integration&quot;]
+    end
+
+    subgraph PRECOMPUTE[&quot;GPU Precompute&quot;]
+        PT[&quot;Transmittance LUT&quot;]
+        PM2[&quot;Multi-Scattering LUT&quot;]
+        PS[&quot;Sky-View LUT&quot;]
+        PSH[&quot;Cloud shadow map&quot;]
+    end
+
+    subgraph DYNAMIC[&quot;Frame Dynamic&quot;]
+        DCEL[&quot;Celestial state&quot;]
+        DWEATHER[&quot;Weather values&quot;]
+        DCLOUD[&quot;Cloud parameters&quot;]
+        DNIGHT[&quot;Night animation&quot;]
+    end
+
+    subgraph SKYBOX[&quot;Sky / Compositor&quot;]
+        SATM[&quot;Atmosphere&quot;]
+        SCEL[&quot;Celestials&quot;]
+        SCLOUD[&quot;Clouds&quot;]
+        SAP[&quot;Aerial Perspective&quot;]
+    end
+
+    OUT[&quot;Godot Frame Output&quot;]
+    APPEAR[&quot;Scene appearance&quot;]
+    LIGHT[&quot;Scene lighting&quot;]
+
+    PROJECT --&gt; ADP
+    ADP --&gt; SYSTEM
+    SYSTEM --&gt; PRECOMPUTE
+    SYSTEM --&gt; DYNAMIC
+    PRECOMPUTE --&gt; SKYBOX
+    DYNAMIC --&gt; SKYBOX
+    SKYBOX --&gt; OUT
+    OUT --&gt; APPEAR
+    OUT --&gt; LIGHT</pre></div>
+<p>This decomposition is the main thing I want the series to preserve.</p>
+<p>The equations will change.</p>
+<p>The shaders will change.</p>
+<p>The quality settings will change.</p>
+<p>The cloud model will probably change again.</p>
+<p>But the architectural questions stay the same:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>Who owns this resource?</span></span>
+<span class="line"><span>Who computes this value?</span></span>
+<span class="line"><span>When does it change?</span></span>
+<span class="line"><span>Who consumes it?</span></span>
+<span class="line"><span>Can it be tested independently?</span></span>
+<span class="line"><span>Can it fail without breaking the renderer?</span></span></code></pre>
+<p>Those questions are as important to an engine-facing technical art system as the scattering equations themselves.</p>
+<hr/>
+<h2 id="what-this-series-is-really-about">What This Series Is Really About</h2>
+<p>On the surface, this is a series about building an atmosphere renderer.</p>
+<p>Underneath, it is really a series about <strong>turning rendering mathematics into an engine subsystem</strong>.</p>
+<p>That means dealing with all the layers between a paper equation and a shipped feature:</p>
+<div class="mermaid-wrapper"><pre class="mermaid" data-chart="flowchart TB
+    MODEL[&#34;Physical model&#34;] --> ALGO[&#34;Numerical algorithm&#34;]
+    ALGO --> REF[&#34;CPU reference&#34;]
+    REF --> GPUIMPL[&#34;GPU implementation&#34;]
+    GPUIMPL --> LIFETIME[&#34;Resource lifetime&#34;]
+    LIFETIME --> IFACE[&#34;Shader interface&#34;]
+    IFACE --> SCHED[&#34;Frame scheduling&#34;]
+    SCHED --> ENGINE[&#34;Engine integration&#34;]
+    ENGINE --> ARTIST[&#34;Artist controls&#34;]
+    ARTIST --> RUNTIME[&#34;Runtime APIs&#34;]
+    RUNTIME --> PERF[&#34;Performance&#34;]
+    PERF --> VALID[&#34;Validation&#34;]">flowchart TB
+    MODEL[&quot;Physical model&quot;] --&gt; ALGO[&quot;Numerical algorithm&quot;]
+    ALGO --&gt; REF[&quot;CPU reference&quot;]
+    REF --&gt; GPUIMPL[&quot;GPU implementation&quot;]
+    GPUIMPL --&gt; LIFETIME[&quot;Resource lifetime&quot;]
+    LIFETIME --&gt; IFACE[&quot;Shader interface&quot;]
+    IFACE --&gt; SCHED[&quot;Frame scheduling&quot;]
+    SCHED --&gt; ENGINE[&quot;Engine integration&quot;]
+    ENGINE --&gt; ARTIST[&quot;Artist controls&quot;]
+    ARTIST --&gt; RUNTIME[&quot;Runtime APIs&quot;]
+    RUNTIME --&gt; PERF[&quot;Performance&quot;]
+    PERF --&gt; VALID[&quot;Validation&quot;]</pre></div>
+<p>That is why the later posts spend just as much time on <code>RenderingDevice</code>, <code>std140</code>, <code>Texture2DRD</code>, <code>@tool</code>, providers, dirty flags, resource ownership, and validation as they do on Rayleigh and Mie scattering.</p>
+<p>The rendering equation is only the beginning.</p>
+<p>The interesting engineering starts when that equation has to live inside an engine.</p>
+<hr/>
+<h2 id="final-state">Final State</h2>
+<p>The completed system provides:</p>
+<ul>
+<li>physically motivated Rayleigh, Mie, and ozone atmospheric behaviour,</li>
+<li>precomputed transmittance, multiple-scattering, and sky-view data,</li>
+<li>a custom Godot sky shader,</li>
+<li>sun and moon rendering,</li>
+<li>procedural stars, Milky Way, nebulae, and aurora,</li>
+<li>cloud interfaces and a volumetric cloud path,</li>
+<li>cloud self-shadowing through a camera-relative optical-depth map,</li>
+<li>aerial perspective through a compositor compute pass,</li>
+<li>atmospheric ambient-light integration,</li>
+<li>runtime weather and cloud providers,</li>
+<li>profile and preset-based configuration,</li>
+<li>live editor preview,</li>
+<li>a custom Inspector,</li>
+<li>quality tiers,</li>
+<li>performance-oriented resource and parameter lifetimes,</li>
+<li>planetary/surface-to-orbit operation,</li>
+<li>and a validation suite covering both isolated modules and the integrated addon.</li>
+</ul>
+<p>The validation phase concluded with the system operating as a single <code>AtmosphereSystem</code> rather than a set of disconnected demonstrations, with known engine-level limitations documented rather than hidden.</p>
+<hr/>
+<h2 id="the-posts-ahead">The Posts Ahead</h2>
+<p>The individual posts will now unpack these pieces one at a time.</p>
+<p>Some will start from the mathematics.</p>
+<p>Some will start from an engine API.</p>
+<p>Some will start with a broken frame and work backwards.</p>
+<p>That is intentional.</p>
+<p>A renderer is usually understood from two directions:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>Theory → Implementation</span></span></code></pre>
+<p>and:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word" tabindex="0" data-language="text"><code><span class="line"><span>Implementation Failure → Theory</span></span></code></pre>
+<p>The first tells you how the system is supposed to work.</p>
+<p>The second tells you what the theory forgot to mention.</p>
+<p>Both are useful.</p>
+<hr/>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://sebh.github.io/publications/egsr2020.pdf">Sebastian Hillaire — “A Scalable and Production Ready Sky and Atmosphere Rendering Technique”</a></li>
+<li><a href="https://inria.hal.science/inria-00288758/document">Bruneton and Neyret — “Precomputed Atmospheric Scattering”</a></li>
+<li><a href="https://docs.godotengine.org/en/4.5/tutorials/shaders/compute_shaders.html">Godot 4.5 — Using Compute Shaders</a></li>
+<li><a href="https://docs.godotengine.org/en/4.5/classes/class_renderingdevice.html">Godot 4.5 — RenderingDevice</a></li>
+<li><a href="https://docs.godotengine.org/en/stable/classes/class_texture2drd.html">Godot 4.5 — Texture2DRD</a></li>
+</ul>
+<hr/>
+<p><em>The rest of the series goes into the implementation.</em></p>  </div> </div> <!-- Sidebar TOC (desktop, sticky) --> <aside id="toc-sidebar" class="hidden xl:block fixed right-8 top-32 w-64 overflow-y-auto no-scrollbar pb-8 z-30 transition-all duration-200" style="max-height: calc(100vh - 10rem);"> <nav class="text-sm" data-toc><h4 class="font-display font-semibold text-text-primary mb-4">On this page</h4><ul class="space-y-1 border-l border-border"><li class><a href="#what-we-are-actually-building" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="what-we-are-actually-building">What We Are Actually Building</a></li><li class><a href="#the-fundamental-rendering-problem" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-fundamental-rendering-problem">The Fundamental Rendering Problem</a></li><li class><a href="#precomputation-is-the-backbone" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="precomputation-is-the-backbone">Precomputation Is the Backbone</a></li><li class="ml-4"><a href="#transmittance-lut" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="transmittance-lut">Transmittance LUT</a></li><li class="ml-4"><a href="#multiple-scattering-lut" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="multiple-scattering-lut">Multiple-Scattering LUT</a></li><li class="ml-4"><a href="#sky-view-lut" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="sky-view-lut">Sky-View LUT</a></li><li class><a href="#the-gpu-foundation-renderingdevice-and-compute" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-gpu-foundation-renderingdevice-and-compute">The GPU Foundation: RenderingDevice and Compute</a></li><li class><a href="#cpu-reference-first-gpu-second" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="cpu-reference-first-gpu-second">CPU Reference First, GPU Second</a></li><li class><a href="#the-custom-sky-shader" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-custom-sky-shader">The Custom Sky Shader</a></li><li class><a href="#celestial-rendering-is-part-of-the-same-system" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="celestial-rendering-is-part-of-the-same-system">Celestial Rendering Is Part of the Same System</a></li><li class><a href="#clouds-from-occlusion-to-a-volume" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="clouds-from-occlusion-to-a-volume">Clouds: From Occlusion to a Volume</a></li><li class="ml-4"><a href="#the-cloud-revamp" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-cloud-revamp">The Cloud Revamp</a></li><li class><a href="#aerial-perspective-the-atmosphere-leaves-the-sky" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="aerial-perspective-the-atmosphere-leaves-the-sky">Aerial Perspective: The Atmosphere Leaves the Sky</a></li><li class><a href="#lighting-integration-the-sky-has-to-illuminate-the-world" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="lighting-integration-the-sky-has-to-illuminate-the-world">Lighting Integration: The Sky Has to Illuminate the World</a></li><li class><a href="#runtime-weather-without-coupling-the-addon-to-the-game" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="runtime-weather-without-coupling-the-addon-to-the-game">Runtime Weather Without Coupling the Addon to the Game</a></li><li class><a href="#profiles-presets-and-the-public-api" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="profiles-presets-and-the-public-api">Profiles, Presets, and the Public API</a></li><li class><a href="#quality-tiers-are-scheduling-policies" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="quality-tiers-are-scheduling-policies">Quality Tiers Are Scheduling Policies</a></li><li class><a href="#editor-preview-is-a-rendering-mode-not-a-separate-renderer" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="editor-preview-is-a-rendering-mode-not-a-separate-renderer">Editor Preview Is a Rendering Mode, Not a Separate Renderer</a></li><li class><a href="#the-custom-inspector-is-the-last-10-that-makes-the-system-usable" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-custom-inspector-is-the-last-10-that-makes-the-system-usable">The Custom Inspector Is the Last 10% That Makes the System Usable</a></li><li class><a href="#planetary-scale-changes-the-assumptions" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="planetary-scale-changes-the-assumptions">Planetary Scale Changes the Assumptions</a></li><li class><a href="#coordinate-systems-are-a-first-class-rendering-problem" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="coordinate-systems-are-a-first-class-rendering-problem">Coordinate Systems Are a First-Class Rendering Problem</a></li><li class><a href="#performance-is-part-of-the-architecture" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="performance-is-part-of-the-architecture">Performance Is Part of the Architecture</a></li><li class="ml-4"><a href="#static-or-infrequent" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="static-or-infrequent">Static or Infrequent</a></li><li class="ml-4"><a href="#frame-dynamic" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="frame-dynamic">Frame Dynamic</a></li><li class="ml-4"><a href="#per-pixel" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="per-pixel">Per Pixel</a></li><li class><a href="#validation-the-renderer-is-not-finished-when-it-looks-good" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="validation-the-renderer-is-not-finished-when-it-looks-good">Validation: The Renderer Is Not Finished When It Looks Good</a></li><li class><a href="#the-series-roadmap" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-series-roadmap">The Series Roadmap</a></li><li class="ml-4"><a href="#1-physical-and-rendering-foundations" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="1-physical-and-rendering-foundations">1. Physical and Rendering Foundations</a></li><li class="ml-4"><a href="#2-gpu-compute-infrastructure" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="2-gpu-compute-infrastructure">2. GPU Compute Infrastructure</a></li><li class="ml-4"><a href="#3-precomputed-atmospheric-lighting" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="3-precomputed-atmospheric-lighting">3. Precomputed Atmospheric Lighting</a></li><li class="ml-4"><a href="#4-the-sky-renderer" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="4-the-sky-renderer">4. The Sky Renderer</a></li><li class="ml-4"><a href="#5-the-night-sky" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="5-the-night-sky">5. The Night Sky</a></li><li class="ml-4"><a href="#6-runtime-apis-and-integration" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="6-runtime-apis-and-integration">6. Runtime APIs and Integration</a></li><li class="ml-4"><a href="#7-clouds-and-scene-interaction" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="7-clouds-and-scene-interaction">7. Clouds and Scene Interaction</a></li><li class="ml-4"><a href="#8-aerial-perspective" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="8-aerial-perspective">8. Aerial Perspective</a></li><li class="ml-4"><a href="#9-ambient-and-lighting-integration" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="9-ambient-and-lighting-integration">9. Ambient and Lighting Integration</a></li><li class="ml-4"><a href="#10-editor-tooling" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="10-editor-tooling">10. Editor Tooling</a></li><li class="ml-4"><a href="#11-performance-and-production-hardening" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="11-performance-and-production-hardening">11. Performance and Production Hardening</a></li><li class="ml-4"><a href="#12-planetary-mode-and-validation" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="12-planetary-mode-and-validation">12. Planetary Mode and Validation</a></li><li class><a href="#how-to-read-the-individual-posts" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="how-to-read-the-individual-posts">How to Read the Individual Posts</a></li><li class><a href="#the-engineering-philosophy-behind-the-series" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-engineering-philosophy-behind-the-series">The Engineering Philosophy Behind the Series</a></li><li class="ml-4"><a href="#physical-motivation-not-physical-purism" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="physical-motivation-not-physical-purism">Physical Motivation, Not Physical Purism</a></li><li class="ml-4"><a href="#separate-state-by-lifetime" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="separate-state-by-lifetime">Separate State by Lifetime</a></li><li class="ml-4"><a href="#let-interfaces-absorb-game-specific-knowledge" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="let-interfaces-absorb-game-specific-knowledge">Let Interfaces Absorb Game-Specific Knowledge</a></li><li class="ml-4"><a href="#make-failures-loud-at-the-boundary" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="make-failures-loud-at-the-boundary">Make Failures Loud at the Boundary</a></li><li class="ml-4"><a href="#test-the-math-before-the-beauty" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="test-the-math-before-the-beauty">Test the Math Before the Beauty</a></li><li class><a href="#where-the-architecture-landed" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="where-the-architecture-landed">Where the Architecture Landed</a></li><li class><a href="#what-this-series-is-really-about" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="what-this-series-is-really-about">What This Series Is Really About</a></li><li class><a href="#final-state" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="final-state">Final State</a></li><li class><a href="#the-posts-ahead" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="the-posts-ahead">The Posts Ahead</a></li><li class><a href="#references" class="toc-link block text-text-tertiary hover:text-text-primary transition-colors py-1 pl-4 -ml-px border-l border-transparent hover:border-accent" data-toc-link="references">References</a></li></ul></nav> </aside> </div> <!-- Smooth ending --> <div class="container-narrow mt-20 mb-12"> <div class="tech-frame p-8 md:p-12 bg-bg-secondary text-center"> <span class="meta-label block mb-3">End of Note</span> <h3 class="heading-4 mb-4">Found this useful?</h3> <p class="text-text-secondary mb-6 max-w-lg mx-auto">
+More field notes on graphics, procedural systems, tools, and pipelines are filed in the archive.
+</p> <div class="flex flex-wrap items-center justify-center gap-4"> <a href="/blog" class="btn btn-primary">← All Field Notes</a> <a href="/contact" class="btn btn-ghost">Get in Touch</a> </div> </div> </div> </article>  </main> <footer class="border-t border-border mt-auto"> <div class="container py-12"> <div class="flex flex-col md:flex-row items-center justify-between gap-6"> <!-- Brand --> <div class="flex items-center gap-3"> <span class="w-8 h-8 bg-accent flex items-center justify-center font-mono font-semibold text-bg-primary text-xs rounded-[3px]">
+V
+</span> <div> <p class="font-display font-semibold text-text-primary">Varun Kumar Gupta</p> <p class="text-xs text-text-tertiary">© 2026 · Graphics Engineer & Technical Artist</p> </div> </div> <!-- Built with --> <p class="frame-tag">
+Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="hover:text-text-primary transition-colors">Astro</a>
+· Field notes from a film studio
+</p> </div> </div> </footer> <!-- Theme meta tag updater --> <script>
+      function updateThemeColor() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', isDark ? '#080807' : '#F4F0E7');
+        }
+      }
+      
+      // Update on load
+      updateThemeColor();
+      
+      // Watch for theme changes
+      const observer = new MutationObserver(updateThemeColor);
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    </script> <!-- Scroll animations --> <script type="module">document.addEventListener("DOMContentLoaded",()=>{const e=document.getElementById("custom-cursor");if(!e||window.matchMedia("(pointer: coarse)").matches){e?.remove();return}let r=0,s=0,n=0,o=0;document.addEventListener("mousemove",t=>{r=t.clientX,s=t.clientY});function c(){e&&(n+=(r-n)*.15,o+=(s-o)*.15,e.style.left=n+"px",e.style.top=o+"px",requestAnimationFrame(c))}c(),document.querySelectorAll('a, button, [role="button"], input, textarea, select, .hover-glow, .tech-frame, .card').forEach(t=>{t.addEventListener("mouseenter",()=>e.classList.add("hovering")),t.addEventListener("mouseleave",()=>e.classList.remove("hovering"))})});</script> <!-- Custom cursor --> <script type="module">document.addEventListener("DOMContentLoaded",()=>{const t=new IntersectionObserver(e=>{e.forEach(r=>{r.isIntersecting&&(r.target.classList.add("visible"),t.unobserve(r.target))})},{root:null,rootMargin:"0px 0px -10% 0px",threshold:.1});document.querySelectorAll(".reveal, .reveal-children, [data-animate]").forEach(e=>{e.classList.add("reveal"),t.observe(e)})});</script> </body> </html> <script type="module">function a(){const n=document.getElementById("toc-sidebar"),r=document.querySelector("footer.border-t");if(!n||!r)return;const s=n,e=r,c=128,i=32;function t(){const o=e.getBoundingClientRect(),l=window.innerHeight;if(o.top<l){const g=o.top-c-i;s.style.maxHeight=`${Math.max(g,100)}px`}else s.style.maxHeight="calc(100vh - 10rem)"}window.addEventListener("scroll",t,{passive:!0}),window.addEventListener("resize",t,{passive:!0}),t()}document.addEventListener("DOMContentLoaded",a);document.addEventListener("astro:page-load",a);function d(){const n=document.querySelectorAll("[data-toc-link]"),r=document.querySelectorAll("article [id]");if(n.length===0||r.length===0)return;const s=new IntersectionObserver(e=>{e.forEach(c=>{if(c.isIntersecting){const i=c.target.getAttribute("id");n.forEach(t=>{const o=t.getAttribute("data-toc-link")===i;t.classList.toggle("text-accent",o),t.classList.toggle("border-accent",o),t.classList.toggle("text-text-tertiary",!o),t.classList.toggle("border-transparent",!o)})}})},{rootMargin:"-20% 0px -60% 0px",threshold:0});r.forEach(e=>s.observe(e)),n.forEach(e=>{e.addEventListener("click",c=>{c.preventDefault();const i=e.getAttribute("data-toc-link"),t=document.getElementById(i||"");t&&(t.scrollIntoView({behavior:"smooth",block:"start"}),history.replaceState(null,"",`#${i}`))})})}document.addEventListener("DOMContentLoaded",d);document.addEventListener("astro:page-load",d);</script>
