@@ -11,7 +11,7 @@ export async function getStaticPaths() {
 }
 
 const { project } = Astro.props;
-const { Content } = await project.render();
+const { Content, headings } = await project.render();
 ---
 
 <ProjectPage
@@ -25,6 +25,7 @@ const { Content } = await project.render();
   order={project.data.order}
   cover={project.data.cover}
   links={project.data.links}
+  headings={headings}
 >
   <Content />
 </ProjectPage>

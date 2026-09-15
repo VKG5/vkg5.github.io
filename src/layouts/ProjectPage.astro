@@ -1,7 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import Tag from '@/components/common/Tag.astro';
 import ImageCarousel from '@/components/projects/ImageCarousel.astro';
+import ContentsControl from '@/components/blog/ContentsControl.astro';
 import { formatDate } from '@/lib/utils';
 import { PROJECT_CATEGORIES } from '@/lib/constants';
 
@@ -20,6 +20,7 @@ interface Props {
     demo?: string;
     download?: string;
   };
+  headings: { depth: number; slug: string; text: string }[];
 }
 
 const {
@@ -33,6 +34,7 @@ const {
   order,
   cover,
   links,
+  headings,
 } = Astro.props;
 
 const categoryLabels = categories
@@ -57,28 +59,28 @@ const cleanedContent = contentHtml.replace(imgRegex, '');
 
 <BaseLayout title={title} description={shortDescription ?? description} image={cover}>
   <article class="py-12 md:py-20">
-    <!-- Field report header (§28) -->
-    <header class="container mb-10">
-      <div class="flex items-center gap-3 mb-5 flex-wrap">
-        {order && <span class="frame-tag">PROJECT {String(order).padStart(2, '0')}</span>}
-        <span class="text-border">/</span>
-        <span class="frame-tag uppercase text-accent">{categoryLabels || 'Project'}</span>
-        <span class="text-border">/</span>
-        <span class="field-chip">{statusLabel}</span>
+    <!-- Header -->
+    <header class="reading-column mb-12">
+      <div class="flex items-center gap-3 frame-tag mb-5">
+        {order && <span>PROJECT {String(order).padStart(2, '0')}</span>}
+        <span>·</span>
+        <a href="/projects" class="link uppercase">{categoryLabels || 'Project'}</a>
+        <span>·</span>
+        <span class="uppercase">{statusLabel}</span>
       </div>
 
-      <h1 class="heading-1 mb-5">{title}</h1>
+      <h1 class="heading-1 mb-6">{title}</h1>
 
-      <p class="lead mb-8 max-w-3xl">{shortDescription ?? description}</p>
+      <p class="lead mb-6">{shortDescription ?? description}</p>
 
-      <!-- Technology -->
-      <div class="flex flex-wrap gap-2 mb-8">
-        {technologies.map((tech) => (
-          <Tag>{tech}</Tag>
-        ))}
-      </div>
+      <!-- Technologies — quiet mono line, matching field notes -->
+      {technologies.length > 0 && (
+        <p class="frame-tag uppercase mb-6">
+          {technologies.join(' / ')}
+        </p>
+      )}
 
-      <!-- Links — View Source is the primary action (§30) -->
+      <!-- Links — View Source is the primary action -->
       {links && (
         <div class="flex flex-wrap gap-4">
           {links.github && (
@@ -111,33 +113,31 @@ const cleanedContent = contentHtml.replace(imgRegex, '');
 
     <!-- Image Carousel -->
     {(extractedImages.length > 0 || cover) && (
-      <div class="container mb-12">
+      <div class="reading-column-wide mb-12">
         <ImageCarousel images={extractedImages} cover={cover} />
       </div>
     )}
 
-    <!-- Field report body -->
-    <div class="container-narrow">
+    <!-- Body -->
+    <div class="reading-column">
       <div class="prose-custom">
         <Fragment set:html={cleanedContent} />
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="container-narrow mt-20 pt-8 border-t border-border">
-      <div class="tech-frame p-8 md:p-10 bg-bg-secondary text-center">
-        <span class="meta-label block mb-3">End of Report</span>
-        <h3 class="heading-4 mb-4">Next artifact?</h3>
-        <p class="text-text-secondary mb-6 max-w-lg mx-auto">
-          More systems, tools, and experiments are documented on the work index — or reach out
-          to discuss graphics, pipelines, and production technology.
+    <!-- On-demand Contents -->
+    {headings.length > 0 && <ContentsControl headings={headings} />}
+
+    <!-- End of Report -->
+    <footer class="reading-column mt-20 mb-12">
+      <div class="border-t border-border pt-8">
+        <span class="meta-label block mb-4">End of Report</span>
+        <p class="text-text-secondary mb-6">
+          More systems, tools, and experiments are filed on the work index.
         </p>
-        <div class="flex flex-wrap items-center justify-center gap-4">
-          <a href="/projects" class="btn btn-primary">← All Work</a>
-          <a href="/contact" class="btn btn-ghost">Get in Touch</a>
-        </div>
+        <a href="/projects" class="link-underline text-accent text-sm">More work →</a>
       </div>
-      <p class="frame-tag mt-6 text-center">
+      <p class="frame-tag mt-10">
         Documented {formatDate(publishedAt)}
       </p>
     </footer>
