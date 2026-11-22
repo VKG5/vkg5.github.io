@@ -9,6 +9,7 @@ seriesOrder: 1
 section: godot-atmosphere
 featured: true
 cover: /images/blog/godot-atmosphere/atmosphere.png
+updatedAt: 2026-11-22
 draft: false
 ---
 
@@ -361,6 +362,8 @@ Instead, procedural layers are isolated into shader includes:
 
 The night-sky implementation is a good example of this separation. Five independent layers share common fade and cloud-occlusion logic while remaining individually controllable, and none of the layers trigger atmospheric LUT regeneration because they are frame-dynamic rather than part of the precomputed scattering state.
 
+Underneath those layers there's now also a faint **night atmosphere**: an airglow floor that brightens toward the horizon, plus a moonlit Rayleigh sky. It became necessary once sun transmittance was fixed to be properly blocked by the planet, because the sun-lit LUT then goes black after sunset. It's evaluated analytically in the sky shader, so like the other night layers it never touches the LUTs.
+
 This allows expensive atmospheric state and cheap visual state to evolve on different schedules.
 
 ---
@@ -387,6 +390,8 @@ The important part is coherence.
 If the visible sun moves in one direction while the `DirectionalLight3D` still lights the world from yesterday's direction, the renderer is technically functional and visually wrong.
 
 The cloud refactor exposed exactly this class of bug: user-provided sun lights must be synchronized from the live celestial direction every frame so that scene shadows remain aligned with the visible sun.
+
+Since this post first went up, the `CelestialProfile` has also grown a small "Sun Arc" group (`sun_arc_height_scale`, `sun_rise_azimuth_offset`, `sun_set_azimuth_offset`) for art-directing how high the sun climbs and where it rises and sets. The modifiers are applied once in `AtmosphereSystem`, so the sky shader, lighting, clouds, aerial perspective, and moon orbit all follow the same modified arc rather than each re-deriving it.
 
 The atmosphere therefore treats celestial state as shared rendering state, not just something used to place a sun disk in the sky.
 
@@ -468,6 +473,8 @@ screen pixels
 The refactor instead observes that a ground shadow mainly needs the **vertical optical depth through the cloud column**. That makes the shadow representation fundamentally 2D.
 
 The resulting 256 × 256 R16F camera-relative shadow map reduces the problem from billions of per-frame noise evaluations to roughly a million density evaluations for the complete map, while making shadow cost independent of output resolution.
+
+I should be honest here: the shadow path has needed a fair amount of stabilisation since this post was first published. Map alignment, the view-matrix direction, making shadows lean away from the sun instead of falling straight down, and centring the map where the camera-to-sun ray crosses the cloud layer were all fixed later. That debugging story will get its own post.
 
 That is the kind of approximation this series is interested in: not "physically perfect at any cost," but **choose an approximation that preserves the perceptually important quantity**.
 
@@ -834,7 +841,7 @@ update in place
 
 That is the point.
 
-The renderer already had the right high-level decomposition. Performance work was largely about respecting the intended lifetime of each piece of data. The documented performance pass reports zero per-frame Dictionary allocations in the hot path for unchanged weather values and persistent GPU resources for aerial perspective rather than create/destroy operations in the render callback.
+The renderer already had the right high-level decomposition. Performance work was largely about respecting the intended lifetime of each piece of data. The performance pass removed most of the per-frame Dictionary churn from the parameter paths (unchanged weather values now skip override recomputation entirely; the small snapshot used for that change detection is what remains), and aerial perspective keeps persistent GPU resources rather than create/destroy operations in the render callback.
 
 ---
 
@@ -854,7 +861,7 @@ The final validation pass exists to catch the problems that visual testing misse
 
 The current validation work includes unit tests for profiles, presets, LUT lifecycles, dirty state, aerial parameter completeness, and renderer safety, plus scene-level validation and regression runs across the previous phases.
 
-The documented Phase 24 suite contains 49 validation tests, while the full regression pass re-runs the earlier phase tests and separately verifies GPU-dependent work when a real `RenderingDevice` is available.
+The documented Phase 24 suite contains 49 validation tests, while the full regression pass re-runs the earlier phase tests and separately verifies GPU-dependent work when a real `RenderingDevice` is available. A Phase 25 regression suite has since been added alongside the post-1.0 bug fixes, so each fix ships with the test that would have caught it.
 
 The important distinction is between:
 
@@ -1333,8 +1340,9 @@ The completed system provides:
 - a custom Godot sky shader,
 - sun and moon rendering,
 - procedural stars, Milky Way, nebulae, and aurora,
+- a night atmosphere glow (airglow plus moonlit Rayleigh sky),
 - cloud interfaces and a volumetric cloud path,
-- cloud self-shadowing through a camera-relative optical-depth map,
+- volumetric self-shadowing inside the clouds, plus ground cloud shadows through a camera-relative optical-depth map (still being stabilised),
 - aerial perspective through a compositor compute pass,
 - atmospheric ambient-light integration,
 - runtime weather and cloud providers,
